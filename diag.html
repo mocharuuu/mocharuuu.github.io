@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Fox API connectivity check</title>
+<style>body{background:#0a0d14;color:#dfe6f3;font:14px/1.6 ui-monospace,Consolas,monospace;margin:2rem auto;max-width:60rem;padding:0 1rem}
+h1{font-size:1.2rem}pre{background:#121725;padding:1rem;border-radius:6px;white-space:pre-wrap;word-break:break-word}
+.v{background:#1a2133;border-left:4px solid #e8a33d;padding:1rem;border-radius:4px;margin-top:1rem}</style></head>
+<body>
+<h1>Kingdom of Foxes — API connectivity check</h1>
+<p>Running probes against <code>https://kingdomfoxes.com</code> from this page's origin
+(<code id="origin"></code>). Copy the whole output back to the assistant.</p>
+<pre id="out">running…</pre>
+<div class="v" id="verdict"></div>
+<script>
+const API = "https://kingdomfoxes.com";
+const out = document.getElementById("out");
+const lines = [];
+const log = (m) => { lines.push(m); out.textContent = lines.join("\n"); };
+document.getElementById("origin").textContent = location.origin;
+
+/* 1. Can this browser reach the origin at all? An <img> load is not subject to
+      CORS, so success here means the network path and any firewall in front of
+      the site are fine for this browser, and only CORS can be at fault. */
+function imgProbe() {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const t = setTimeout(() => resolve("TIMEOUT (10s)"), 10000);
+    img.onload = () => { clearTimeout(t); resolve("LOADED (" + img.naturalWidth + "px)"); };
+    img.onerror = () => { clearTimeout(t); resolve("FAILED"); };
+    img.src = API + "/favicon.png?cb=" + Date.now();
+  });
+}
+
+async function run() {
+  log("origin:      " + location.origin);
+  log("target:      " + API);
+  log("time:        " + new Date().toISOString());
+  log("");
+
+  const img = await imgProbe();
+  log("1. <img> " + API + "/favicon.png");
+  log("   -> " + img);
+
+  log("");
+  log("2. fetch /api/players  mode=no-cors  (response is opaque; this only");
+  log("   tells us whether a response came back at all)");
+  let opaque = "";
+  try {
+    const r = await fetch(API + "/api/players", { mode: "no-cors", cache: "no-store" });
+    opaque = "RESOLVED type=" + r.type + " status=" + r.status;
+  } catch (e) { opaque = "REJECTED " + e.name + ": " + e.message; }
+  log("   -> " + opaque);
+
+  log("");
+  log("3. fetch /api/players  mode=cors  (the real request the page makes)");
+  let cors = "", corsOK = false;
+  try {
+    const r = await fetch(API + "/api/players", { cache: "no-store" });
+    corsOK = true;
+    cors = "RESOLVED status=" + r.status + " ok=" + r.ok;
+    try {
+      const body = await r.text();
+      cors += " bytes=" + body.length + " head=" + JSON.stringify(body.slice(0, 120));
+    } catch (e) { cors += " (body unreadable: " + e.message + ")"; }
+  } catch (e) { cors = "REJECTED " + e.name + ": " + e.message; }
+  log("   -> " + cors);
+
+  log("");
+  log("4. fetch /api/leaderboard  mode=cors");
+  let lb = "";
+  try {
+    const r = await fetch(API + "/api/leaderboard", { cache: "no-store" });
+    lb = "RESOLVED status=" + r.status + " ok=" + r.ok;
+  } catch (e) { lb = "REJECTED " + e.name + ": " + e.message; }
+  log("   -> " + lb);
+
+  // Verdict
+  const v = document.getElementById("verdict");
+  let verdict;
+  if (corsOK) {
+    verdict = "The cross-origin request SUCCEEDED. CORS is configured correctly. " +
+      "If the Members page still shows an error, the problem is elsewhere — send the status codes above.";
+  } else if (img.startsWith("LOADED")) {
+    verdict = "This browser CAN reach kingdomfoxes.com (the favicon loaded), but the API " +
+      "request was refused. The origin " + location.origin + " is still not accepted by the " +
+      "backend: CORS_ORIGINS does not include it, or the service was not restarted after the edit.";
+  } else if (opaque.startsWith("RESOLVED")) {
+    verdict = "A response came back but the favicon did not load — mixed signals. " +
+      "Send this whole output to the assistant.";
+  } else {
+    verdict = "This browser cannot reach kingdomfoxes.com at all — not a CORS problem. " +
+      "Something in front of the site (Cloudflare firewall, DNS, TLS) is refusing the request.";
+  }
+  v.textContent = "VERDICT: " + verdict;
+}
+run();
+</script>
+</body></html>
