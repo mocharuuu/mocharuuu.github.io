@@ -1,0 +1,98 @@
+/* ---------- header ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 4px; align-items: center; flex-wrap: wrap;
+  padding: 10px 20px;
+  background: rgba(10, 13, 20, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-right: 18px; color: var(--text);
+}
+.brand:hover { text-decoration: none; }
+.brand img { display: block; filter: drop-shadow(0 0 6px rgba(240, 81, 38, 0.35)); }
+.wordmark {
+  font-family: var(--serif);
+  font-variant: small-caps;
+  font-size: 19px; font-weight: 700; letter-spacing: 2px;
+  white-space: nowrap;
+}
+.nav-links { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-left: auto; }
+/* Plain layout passthrough outside mobile — see the mobile block below for
+   why this wraps .nav-links-scroll at all. */
+.nav-links-scroll-wrap { display: flex; min-width: 0; }
+.nav-links-scroll { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.nav-links a { color: var(--muted); padding: 7px 12px; border-radius: 8px; font-weight: 600; }
+.nav-links a:hover { color: var(--text); background: var(--bg-2); text-decoration: none; }
+.nav-links a.active { color: #fff; background: linear-gradient(180deg, var(--orange), #c63d18); }
+/* The one link in the nav that's an action rather than a destination — needs
+   to read as a button, but NOT the same solid orange-gradient fill as
+   a.active above, which already means "the page you're on" — a login button
+   in that identical style got mistaken for a second "current page" pill.
+   Outlined instead: still unmistakably brand-orange and button-shaped, but a
+   clearly different treatment at rest; it only takes on the solid .active-
+   style fill transiently on hover, as the "pressing this fills it in" cue.
+   The extra `.nav-links a` prefix outranks the generic a:hover rule above
+   (which would otherwise flatten it to --bg-2 on hover). */
+.nav-links a.nav-login-btn {
+  color: var(--orange-2); font-weight: 700;
+  padding: 6px 13px; margin-left: 2px;
+  background: transparent;
+  border: 2px solid var(--orange-2);
+}
+.nav-links a.nav-login-btn:hover {
+  color: #fff; text-decoration: none;
+  background: linear-gradient(180deg, var(--orange), #c63d18);
+  border-color: transparent;
+}
+
+.profile-chip-wrap { position: relative; margin-left: 6px; }
+.profile-chip {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 12px 4px 4px;
+  background: transparent; border: 1px solid var(--border); border-radius: 999px;
+  color: var(--muted); font-weight: 600; font-size: 13px; cursor: pointer;
+}
+.profile-chip:hover { background: var(--bg-2); border-color: rgba(217, 180, 91, 0.45); color: var(--text); }
+
+.profile-dropdown {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  width: max-content;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 4px;
+}
+.profile-dropdown button, .profile-dropdown a {
+  display: block; width: 100%; text-align: left; white-space: nowrap;
+  background: transparent; border: 0; border-radius: 6px;
+  padding: 8px 10px; color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer;
+  text-decoration: none; box-sizing: border-box;
+}
+.profile-dropdown button:hover, .profile-dropdown a:hover { background: var(--bg-2); color: var(--orange-2); }
+.profile-dropdown button:disabled { opacity: 0.6; cursor: default; }
+.profile-dropdown-divider { height: 1px; margin: 4px 6px; background: var(--border-soft); }
+
+/* Per-row staff actions (Players.jsx): a single "⋯" trigger opens a dropdown
+   of the four actions (view application / manage Wynncraft link / offboard /
+   mark On Leave-Warned) as bigger, labeled rows rather than a permanent row
+   of small icon buttons, which crowded a narrow Actions column. */
+.row-menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  width: max-content; min-width: 220px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 6px;
+}
+.row-menu-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  text-align: left; background: transparent; border: 0; border-radius: 8px;
+  padding: 10px 12px; color: var(--text); font-weight: 600; font-size: 14px;
+  cursor: pointer; box-sizing: border-box; white-space: nowrap;
+}
+.row-menu-item:hover:not(:disabled) { background: var(--bg-2); }
+.row-menu-item.danger { color: #ff8a6a; }
+.row-menu-item.danger:hover:not(:disabled) { background: rgba(143, 29, 52, 0.15); }
+.row-menu-item:disabled { opacity: 0.45; cursor: default; }
+.row-menu-emoji { font-size: 17px; width: 20px; text-align: center; flex: none; }

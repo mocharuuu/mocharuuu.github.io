@@ -1,0 +1,316 @@
+/* ---------- loot pools ---------- */
+/* One row, every card sharing the width evenly, so every pool's title sits
+   next to every other one on load — wraps to more rows only once a card
+   would be squeezed under its min-width (narrow viewports). body.loot-
+   pools-page widens .container to 1500px (vs. the site's usual 1100px,
+   see above) precisely so 7 cards (the most any one tab has) have room to
+   be legible in one row.
+   align-items: flex-start (not stretch) so each card sizes to its own
+   content instead of being forced to match its tallest sibling — every
+   card is now a <details> a user can collapse independently, and stretch
+   would otherwise leave a collapsed card's empty space still occupying the
+   full row height. */
+.loot-pool-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.loot-pool-row .loot-pool-card { flex: 1 1 0; min-width: 180px; }
+/* Height tracks the viewport (roughly what's left below the header/toolbar
+   and above the footer) instead of a fixed pixel value, so the cards use
+   that leftover space rather than leaving it empty — it's a max-height, so
+   a card with less content than that just sits shorter, it never stretches
+   to fill it. Scrolls its own overflow: a pool's full reward list is a
+   scroll inside that one card rather than the whole page. A slim gold top
+   edge and a hover lift give each card a touch of depth instead of a flat
+   outline sitting on the page. */
+.loot-pool-card {
+  min-width: 0; max-height: calc(100vh - 365px); overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  border-top: 2px solid rgba(217, 180, 91, 0.35);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.loot-pool-card:hover {
+  border-color: rgba(217, 180, 91, 0.55);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(217, 180, 91, 0.1);
+}
+/* Themed scrollbar (Chromium/Safari — Firefox gets the scrollbar-color pair
+   above) so the internal scroll reads as part of the dark UI, not a bare OS
+   control dropped on top of it. */
+.loot-pool-card::-webkit-scrollbar { width: 8px; }
+.loot-pool-card::-webkit-scrollbar-track { background: transparent; }
+.loot-pool-card::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.loot-pool-card::-webkit-scrollbar-thumb:hover { background: rgba(217, 180, 91, 0.45); }
+
+/* Overrides .card-title's small-caps — fine for a short word like
+   "Members", but pool names ("Orphion's Nexus of Light", "The Nameless
+   Anomaly") are longer, mixed-case, and often carry an apostrophe;
+   small-caps compresses their lowercase letters into smaller uppercase
+   forms, which is what actually fights a quick scan across 5-7 cards, not
+   the serif itself. Keeping var(--serif) (just in plain mixed case) reads
+   just as fast as a sans-serif swap while staying the site's own type,
+   rather than a UI-chrome font sitting oddly among the rest of the page's
+   headings. */
+.loot-pool-title {
+  margin-bottom: 12px;
+  font-variant: normal; letter-spacing: normal;
+}
+
+/* Each rarity tier is set off with a hairline rule (echoing the gold .rule
+   under the page title, just quieter) rather than spacing alone. */
+/* content-visibility skips layout and paint entirely for the groups scrolled
+   out of view inside .loot-pool-card. A raid tab is ~300 reward rows across
+   five cards and a lootrun tab ~295 across seven, of which maybe a third are
+   ever on screen at once — without this the browser lays out and rasterizes
+   every row of every card up front, which is most of what this page costs on
+   first paint. `contain-intrinsic-size: auto 220px` gives an offscreen group a
+   placeholder height (so the cards' scrollbars are the right size from the
+   start) and the `auto` keyword makes the browser remember each group's real
+   height once it has been rendered once, so scrolling back over it doesn't
+   shift anything. Nothing inside a group paints outside it — the reward
+   tooltips are portaled to <body> (see RewardChip) precisely because the card
+   already clips its own overflow — so the paint containment costs nothing. */
+.loot-tier-group {
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-soft);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+}
+.loot-tier-group:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
+/* Shiny always renders first (see PoolCard), so it inherits the borderless
+   :first-of-type treatment above like any leading group — nothing sits
+   above it but the card title. A faint amber wash is its only extra
+   treatment, marking it as its own category (the drop everyone's actually
+   scanning the pool for) rather than just another rarity bucket. */
+.loot-shiny-group {
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.06), transparent 75%);
+  margin-left: -4px; margin-right: -4px; padding-left: 4px; padding-right: 4px;
+  border-radius: 8px;
+}
+/* "Aspects" / "Items" — each its own <details> (see PoolCard's
+   RewardSection), collapsible independently of each other and of the card
+   itself, only rendered when a pool actually mixes both. The wrapper only
+   carries spacing; margin-collapsing against whatever precedes it (the
+   card title, or the always-visible shiny group above both sections)
+   already keeps that gap consistent without needing a first-of-type
+   special case. Inside, the first tier group needs no extra top divider of
+   its own for the same reason .loot-tier-group:first-of-type never adds
+   one right under a title — nothing to divide it from, this time within
+   the section's own <details> rather than the card's. */
+.loot-reward-section { margin-top: 18px; }
+/* A tinted banner (background + a thicker, more solid top rule than the
+   hairline .loot-tier-group uses) rather than just another small label, so
+   the two halves read as clearly distinct sections and not one more
+   rarity-tier-style heading in the same list. */
+.loot-reward-section-label {
+  font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--gold); margin-bottom: 10px;
+  padding: 7px 10px; border-radius: 6px;
+  background: rgba(217, 180, 91, 0.12);
+  border-top: 2px solid rgba(217, 180, 91, 0.55);
+}
+.loot-tier-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+/* A small glowing bullet in the tier's own color reads as a rarity marker
+   at a glance, the way the game's own tooltip color already does the job —
+   the label text alone felt flat next to the now-richer reward tags. */
+.loot-tier-label::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; flex: none;
+  background: currentColor; box-shadow: 0 0 7px currentColor;
+}
+/* A vertical list of plain rows, not a wrapped grid of tinted chips — only
+   the reward name's text carries the rarity color (see RewardChip's
+   `style`), the row itself stays neutral. Matches how the community
+   reference sites (nori.fish, the-aquarium.com) keep a long, many-tiered
+   reward list scannable: a grid of individually colored/bordered chips is
+   exactly the "too many colours at once" a plain list with colored text
+   avoids. A hairline divider between rows gives the list scan rhythm
+   without needing color to do it. */
+.loot-reward-list { display: flex; flex-direction: column; }
+.loot-reward {
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+  padding: 5px 6px; border-radius: 6px; width: 100%;
+  transition: background-color 0.12s ease;
+}
+.loot-reward:hover { background: rgba(255, 255, 255, 0.05); }
+.loot-reward + .loot-reward { border-top: 1px solid var(--border-soft); }
+/* Guaranteed rewards now show alongside chance-based ones on both tabs (see
+   loot_pools()'s docstring) — right-aligning the badge instead of trailing
+   it right after the name reads as a proper list column instead of just
+   more inline text competing for the same line. */
+.loot-reward .badge.guaranteed { margin-left: auto; }
+.loot-reward-name { line-height: 1.3; }
+/* How many slots in this pool roll the same reward (Wynncraft's own
+   `amount`, e.g. a pool with three Green Ward slots) — a quiet ×N suffix
+   right after the name rather than a separate chip per slot. Explicit
+   neutral grey (not opacity on the inherited rarity color) so it reads as
+   a plain count annotation rather than a dimmer version of the name. */
+.loot-reward-amount { font-weight: 700; color: var(--muted); font-size: 0.92em; }
+/* Which stat a shiny drop is tracking, sourced from a community API
+   (see services.py's _get_shiny_trackers). Forced onto its own line rather
+   than trailing inline after the name — inline, whether it shared the
+   name's line depended on how long the name happened to be (some rewards
+   wrapped, some didn't), which read as inconsistent across the shiny
+   group; a block display keeps every shiny reward's tracker in the same
+   place regardless of name length. */
+.loot-reward-tracker { display: block; font-style: italic; opacity: 0.75; font-size: 0.92em; }
+/* Just a sizing/alignment box now, no background or inset shadow behind
+   the icon itself — the "inventory slot" treatment read as one more boxed
+   element competing with the rest of the (now deliberately flat) row. */
+.loot-reward-icon-slot { display: grid; place-items: center; flex: none; width: 26px; height: 26px; }
+.loot-reward-icon { flex: none; }
+.loot-reward-icon-img { width: 20px; height: 20px; object-fit: contain; }
+.loot-shiny { filter: drop-shadow(0 0 4px rgba(255, 221, 130, 0.85)); }
+.loot-other { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-soft); }
+.loot-other .loot-reward-list { margin-top: 8px; }
+.loot-other summary { border-radius: 7px; padding: 3px 5px; margin: -3px -5px 0; transition: background-color 0.12s ease; }
+.loot-other summary:hover { background: rgba(255, 255, 255, 0.05); }
+
+/* Sits below the title (see PageHead's `below` / LootPools), sharing that
+   row with the countdown. Static, no slide/motion — plain per-button
+   background swap on whichever is .on, the same mechanism .segmented
+   already uses site-wide, not a custom animated indicator. What makes this
+   read as belonging to the page is borrowing the same gold-banner
+   vocabulary the ASPECTS/ITEMS section headers already use (a gold-tinted
+   wash and border) — but plain UI sans-serif, not their serif letterforms:
+   at button size the serif face was blurring into itself and reading as
+   hard to make out, whereas the ASPECTS/ITEMS banners have room to spare. */
+.loot-type-toggle { border-radius: 10px; border-color: rgba(217, 180, 91, 0.35); background: rgba(217, 180, 91, 0.06); }
+.loot-type-toggle button {
+  padding: 12px 26px; font-family: var(--sans); font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.loot-type-toggle button + button { border-left-color: rgba(217, 180, 91, 0.35); }
+/* Same gold-wash/border pairing as .loot-type-toggle right next to it, so
+   the two read as one matched control rather than the countdown being a
+   separate, differently-built object dropped onto the page — the earlier
+   solid panel-gradient fill sat close enough in tone to the page background
+   that it had nothing but its border to read as a distinct shape, which is
+   what still looked "out of place". Plain UI sans-serif for the numbers,
+   same reasoning as the toggle: a decorative face reads slower for exactly
+   the content (numerals, at a glance) where speed matters most. No
+   box-shadow — it read as a floating card dropped onto the header rather
+   than a part of it. margin-left: auto pins it to the far right edge of
+   .page-head-below, the row it now shares with the toggle. */
+.loot-reset-countdown {
+  display: inline-flex; align-items: center; gap: 12px; font-size: 13px;
+  padding: 10px 18px; border-radius: 10px; margin-left: auto;
+  background: rgba(217, 180, 91, 0.06);
+  border: 1px solid rgba(217, 180, 91, 0.35);
+}
+.loot-reset-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; box-shadow: 0 0 6px currentColor; }
+.loot-reset-countdown strong {
+  font-family: var(--sans); font-size: 16px; font-variant-numeric: tabular-nums;
+  padding: 3px 12px; border-radius: 8px; border: 1px solid transparent;
+}
+.loot-reset-far { color: var(--green); }
+.loot-reset-far strong { background: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.35); }
+.loot-reset-soon { color: var(--gold); }
+.loot-reset-soon strong { background: rgba(217, 180, 91, 0.1); border-color: rgba(217, 180, 91, 0.35); }
+.loot-reset-urgent { color: #ff8a6a; }
+.loot-reset-urgent strong { background: rgba(143, 29, 52, 0.16); border-color: rgba(143, 29, 52, 0.45); }
+/* Only the urgent state pulses — it's the one state actually worth glancing
+   back at, so it's the only one that asks for attention. */
+.loot-reset-urgent .loot-reset-dot { animation: loot-pulse 1.4s ease-in-out infinite; }
+@keyframes loot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+/* Aspect rewards with a resolved flavor-text description get a custom
+   hover tooltip (see RewardChip). The help cursor alone only shows up once
+   already hovering — the dotted underline on the name is what makes "this
+   one has more info" obvious at a glance, before the pointer ever gets
+   there, the same convention glossary/definition terms use. */
+.loot-reward-has-tip { cursor: help; }
+.loot-reward-has-tip .loot-reward-name {
+  text-decoration: underline dotted; text-decoration-color: currentColor; text-underline-offset: 3px;
+}
+/* Portal-rendered straight into <body> (see RewardChip) so it floats over
+   the whole page instead of being clipped by .loot-pool-card's own
+   overflow-y: auto. left/top/max-height are set inline, computed in
+   RewardChip's layout effect from the tooltip's real measured size — not a
+   CSS transform, since flipping above/below and staying flush against
+   whichever edge of the chip it's anchored to (the hard rule: never slide
+   back over the chip itself just to fit on screen) needs real dimensions a
+   transform alone can't account for. overflow-y here is what makes that
+   inline max-height (the actual gap above/below the chip, when neither
+   side has room for the full tooltip) scroll instead of clip — though it
+   only ever needs to for the minority of tooltips that don't fully fit in
+   either gap: pointer-events stays off by default (mouse passes straight
+   through to whatever's underneath, exactly as a plain non-interactive
+   tooltip should) and only switches on via .loot-tooltip-scrollable, the
+   class RewardChip adds once it's actually determined this one needs
+   scrolling — see that component's hide-delay comment for why a scrollable
+   tooltip needs to be a real hover target and a non-scrollable one doesn't. */
+.loot-tooltip {
+  position: fixed; pointer-events: none;
+  z-index: 1000; max-width: 340px; max-height: calc(100vh - 20px); overflow-y: auto;
+  padding: 10px 12px; border-radius: 8px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+  font-size: 12.5px; line-height: 1.4; color: var(--text);
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.loot-tooltip-scrollable { pointer-events: auto; }
+/* Same themed scrollbar as .loot-pool-card (Chromium/Safari — Firefox gets
+   the scrollbar-color pair above), so a tooltip that needs to scroll reads
+   as part of the site's own dark UI rather than a bare OS control. */
+.loot-tooltip::-webkit-scrollbar { width: 8px; }
+.loot-tooltip::-webkit-scrollbar-track { background: transparent; }
+.loot-tooltip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.loot-tooltip::-webkit-scrollbar-thumb:hover { background: rgba(217, 180, 91, 0.45); }
+/* One block per stack tier — "Tier 1", "Tier 2", ... in the order
+   nori.fish's own thresholds sort to, each labelled with the copy count
+   that unlocks it, with its own lines (nori.fish's own description array
+   entries, each kept separate — see cache._shape_aspect_description) below
+   rather than run together as one paragraph. */
+.loot-tooltip-tier + .loot-tooltip-tier {
+  margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-soft);
+}
+.loot-tooltip-tier-label { font-weight: 700; color: var(--gold); margin-bottom: 3px; }
+.loot-tooltip-tier-req { font-weight: 400; color: var(--muted); font-size: 0.92em; }
+.loot-tooltip-line + .loot-tooltip-line { margin-top: 3px; }
+
+/* Today's shared raid gambits — one panel above the row, not per-card,
+   since a gambit applies to every raid pool that day rather than one. The
+   gold top edge echoes .loot-pool-card right below it, so this reads as
+   part of the same "loot" card family instead of a bolted-on generic
+   .card — the plain-.card look it had before sat oddly next to the
+   pool cards' gold accent. */
+.loot-gambits-panel { margin-bottom: 16px; border-top: 2px solid rgba(217, 180, 91, 0.35); }
+.loot-gambits-title { margin-bottom: 10px; }
+.loot-gambits-list { display: flex; flex-wrap: wrap; gap: 10px; }
+/* A warm gold-tinted background (rather than a neutral white-on-black
+   chip) and a hover brighten, matching .loot-reward's own hover — these
+   aren't clickable, but the site already uses that same warm-on-hover
+   language for non-interactive emphasis (.loot-shiny-group). */
+.loot-gambit {
+  flex: 1 1 260px; max-width: 420px; display: flex; gap: 10px;
+  padding: 10px 12px; border-radius: 9px;
+  background: rgba(217, 180, 91, 0.05); border: 1px solid var(--border-soft);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.loot-gambit:hover { border-color: rgba(217, 180, 91, 0.3); background: rgba(217, 180, 91, 0.08); }
+/* Diamond glyph — the same inline stroke-icon convention RewardTypeIcon
+   uses for every reward row on this page (see LootPools.jsx), and a nod to
+   the actual in-game/Wynnventory gambit-selection UI, which marks each
+   gambit with a diamond of its own. */
+.loot-gambit-icon { flex: none; margin-top: 2px; color: var(--gold); }
+.loot-gambit-body { min-width: 0; }
+.loot-gambit-name {
+  font-weight: 700; font-size: 13px; color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+}
+.loot-gambit-uncertain {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: 50%; font-size: 10px; font-weight: 700;
+  color: var(--gold); border: 1px solid rgba(217, 180, 91, 0.4); cursor: help;
+}
+.loot-gambit-description { font-size: 12.5px; margin-top: 4px; line-height: 1.4; }
+
+.flag-cell { width: 24px; text-align: center; font-size: 14px; }
+
+.event-card {
+  border-color: rgba(217, 180, 91, 0.5);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(217, 180, 91, 0.12) inset;
+}
+.points-field { display: inline-flex; align-items: center; gap: 6px; }
+.points-input { width: 64px; min-width: 0; text-align: center; padding: 9px 6px; }

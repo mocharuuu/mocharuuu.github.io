@@ -1,0 +1,3349 @@
+/* Site stylesheet. Partials are imported in cascade order — later files
+   override earlier ones (mobile.css must stay near the end). */
+:root {
+  --bg: #0a0d14;
+  --bg-2: #10141f;
+  --panel: #121724;
+  --border: #232b3d;
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --orange: #f05126;
+  --orange-2: #ff7a45;
+  --gold: #d9b45b;
+  --green: #2ecc71;
+  --teal: #2ec4d6;
+  --blue: #3498db;
+  --purple: #9b59b6;
+  /* Deep crimson/maroon rather than a bootstrap-style flat red — the brand
+     orange (above) already sits close to red on the hue wheel, so a plain
+     red danger color reads as barely-distinguishable from it. This one is
+     both cooler (pink-leaning hue) and much darker, so it reads as its own
+     "wine red" rather than a shade of the same orange. */
+  --red: #8f1d34;
+  --red-2: #4a0e1f;
+  /* The wine red above is a fill color — too dark to read as text on the dark
+     panels. This brighter one is the negative counterpart to --green for +/−
+     numeric deltas. */
+  --red-text: #ef4444;
+  --text: #e9ecf2;
+  --muted: #98a1b5;
+  --radius: 14px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --serif: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  --sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { height: 100%; }
+body {
+  margin: 0;
+  min-height: 100%;
+  /* Flat fill only. The two brand glows live on the fixed ::before layer
+     below rather than on this element — see the note there. */
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* iOS Safari "text autosizing" reflows a rotated phone by inflating font
+     sizes on whichever block it decides is the main column — which desynced
+     the map labels from the map and made the nav jump a size on rotate. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+/* The two brand glows, pinned to the viewport.
+ *
+ * These need to stay put while the page scrolls (on the scrolling background
+ * they were painted across the first viewport only, and their hard edges
+ * showed at the page's bottom corners). `background-attachment: fixed` did
+ * that, but it makes the background's paint depend on scroll offset, so the
+ * browser has to re-rasterize two full-viewport radial gradients on every
+ * scroll frame of every page — the cost lands hardest exactly where it is
+ * least affordable, on a software rasterizer and in Firefox, which does not
+ * hand fixed backgrounds to the compositor.
+ *
+ * A fixed-position layer behind the content is the same picture with none of
+ * that: it is painted once and then only ever moved, so scrolling the roster,
+ * the leaderboard or a loot pool no longer repaints the gradients at all.
+ * z-index -1 keeps it behind everything (#root establishes no stacking
+ * context of its own), pointer-events:none keeps it out of hit-testing.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(240, 81, 38, 0.08), transparent 60%),
+    radial-gradient(1000px 520px at -10% 8%, rgba(22, 32, 58, 0.6), transparent 55%);
+}
+/* 100dvh follows the mobile URL bar as it collapses and re-expands; the 100vh
+   declaration above it is the fallback for browsers without dvh, and must
+   stay first so those browsers still get a full-height shell. */
+#root { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+a { color: var(--orange-2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------- header ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; gap: 4px; align-items: center; flex-wrap: wrap;
+  padding: 10px 20px;
+  background: rgba(10, 13, 20, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-right: 18px; color: var(--text);
+}
+.brand:hover { text-decoration: none; }
+.brand img { display: block; filter: drop-shadow(0 0 6px rgba(240, 81, 38, 0.35)); }
+.wordmark {
+  font-family: var(--serif);
+  font-variant: small-caps;
+  font-size: 19px; font-weight: 700; letter-spacing: 2px;
+  white-space: nowrap;
+}
+.nav-links { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-left: auto; }
+/* Plain layout passthrough outside mobile — see the mobile block below for
+   why this wraps .nav-links-scroll at all. */
+.nav-links-scroll-wrap { display: flex; min-width: 0; }
+.nav-links-scroll { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.nav-links a { color: var(--muted); padding: 7px 12px; border-radius: 8px; font-weight: 600; }
+.nav-links a:hover { color: var(--text); background: var(--bg-2); text-decoration: none; }
+.nav-links a.active { color: #fff; background: linear-gradient(180deg, var(--orange), #c63d18); }
+/* The one link in the nav that's an action rather than a destination — needs
+   to read as a button, but NOT the same solid orange-gradient fill as
+   a.active above, which already means "the page you're on" — a login button
+   in that identical style got mistaken for a second "current page" pill.
+   Outlined instead: still unmistakably brand-orange and button-shaped, but a
+   clearly different treatment at rest; it only takes on the solid .active-
+   style fill transiently on hover, as the "pressing this fills it in" cue.
+   The extra `.nav-links a` prefix outranks the generic a:hover rule above
+   (which would otherwise flatten it to --bg-2 on hover). */
+.nav-links a.nav-login-btn {
+  color: var(--orange-2); font-weight: 700;
+  padding: 6px 13px; margin-left: 2px;
+  background: transparent;
+  border: 2px solid var(--orange-2);
+}
+.nav-links a.nav-login-btn:hover {
+  color: #fff; text-decoration: none;
+  background: linear-gradient(180deg, var(--orange), #c63d18);
+  border-color: transparent;
+}
+
+.profile-chip-wrap { position: relative; margin-left: 6px; }
+.profile-chip {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 12px 4px 4px;
+  background: transparent; border: 1px solid var(--border); border-radius: 999px;
+  color: var(--muted); font-weight: 600; font-size: 13px; cursor: pointer;
+}
+.profile-chip:hover { background: var(--bg-2); border-color: rgba(217, 180, 91, 0.45); color: var(--text); }
+
+.profile-dropdown {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  width: max-content;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 4px;
+}
+.profile-dropdown button, .profile-dropdown a {
+  display: block; width: 100%; text-align: left; white-space: nowrap;
+  background: transparent; border: 0; border-radius: 6px;
+  padding: 8px 10px; color: var(--text); font-weight: 600; font-size: 13px; cursor: pointer;
+  text-decoration: none; box-sizing: border-box;
+}
+.profile-dropdown button:hover, .profile-dropdown a:hover { background: var(--bg-2); color: var(--orange-2); }
+.profile-dropdown button:disabled { opacity: 0.6; cursor: default; }
+.profile-dropdown-divider { height: 1px; margin: 4px 6px; background: var(--border-soft); }
+
+/* Per-row staff actions (Players.jsx): a single "⋯" trigger opens a dropdown
+   of the four actions (view application / manage Wynncraft link / offboard /
+   mark On Leave-Warned) as bigger, labeled rows rather than a permanent row
+   of small icon buttons, which crowded a narrow Actions column. */
+.row-menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  width: max-content; min-width: 220px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 6px;
+}
+.row-menu-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  text-align: left; background: transparent; border: 0; border-radius: 8px;
+  padding: 10px 12px; color: var(--text); font-weight: 600; font-size: 14px;
+  cursor: pointer; box-sizing: border-box; white-space: nowrap;
+}
+.row-menu-item:hover:not(:disabled) { background: var(--bg-2); }
+.row-menu-item.danger { color: #ff8a6a; }
+.row-menu-item.danger:hover:not(:disabled) { background: rgba(143, 29, 52, 0.15); }
+.row-menu-item:disabled { opacity: 0.45; cursor: default; }
+.row-menu-emoji { font-size: 17px; width: 20px; text-align: center; flex: none; }
+
+/* ---------- layout ---------- */
+.container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 28px 18px 60px; flex: 1; }
+
+.page-head { margin-bottom: 24px; }
+/* Only present when PageHead gets an `actions` prop — title and controls
+   on the same row instead of the title sitting alone above a separate
+   toolbar. No justify-content here on purpose: the title and its actions
+   are direct flex children, so a caller pins any one of them to the row's
+   far edge with its own `margin-left: auto` rather than this rule forcing
+   one fixed distribution on every possible set of actions. */
+.page-head-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.page-head-row .h1 { margin: 0; }
+/* Only present when PageHead gets a `below` prop — a second row under the
+   title/actions row, for a control that reads better on its own line. Flex
+   so multiple controls (e.g. Lootpools' toggle + countdown) share the row
+   instead of stacking, with the same margin-left:auto convention as
+   page-head-row for pinning one to the far edge. */
+.page-head-below { margin-top: 12px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.h1 {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 1px;
+  font-size: 32px; font-weight: 700; margin: 0 0 4px;
+}
+.sub { color: var(--muted); margin: 0; }
+.rule {
+  height: 1px; margin-top: 14px; border: 0;
+  background: linear-gradient(90deg, var(--gold), rgba(217, 180, 91, 0.15) 55%, transparent);
+  opacity: 0.6;
+}
+
+/* ---------- hero (home) ---------- */
+.hero { text-align: center; padding: 26px 0 34px; }
+.hero-link { display: inline-block; color: inherit; }
+.hero-link:hover { text-decoration: none; opacity: 0.9; }
+.hero-crest {
+  height: 150px; width: auto;
+  filter: drop-shadow(0 0 28px rgba(240, 81, 38, 0.28));
+}
+.hero-title {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 3px;
+  font-size: 44px; font-weight: 700; margin: 14px 0 6px;
+}
+/* Shared by .hero-title and .wordmark: "of" reads as a plain lowercase
+   word, not another small-cap — font-variant:normal overrides the small-
+   caps ancestor for just this word. */
+.of-connector { font-variant: normal; font-style: italic; font-weight: 400; }
+.hero-motto {
+  margin: 0;
+  font-size: 12px; font-weight: 600; letter-spacing: 5px;
+  text-transform: uppercase; color: rgba(233, 236, 242, 0.7);
+}
+.hero .rule {
+  max-width: 420px; margin: 22px auto 0;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.stats { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+.stat {
+  min-width: 150px; padding: 14px 20px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border); border-radius: var(--radius);
+}
+.stat-value {
+  font-size: 26px; font-weight: 800; color: var(--orange-2);
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  color: var(--muted); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;
+}
+.stat-link { display: block; transition: transform 0.12s ease, border-color 0.12s ease; }
+.stat-link:hover { text-decoration: none; transform: translateY(-2px); border-color: rgba(217, 180, 91, 0.45); }
+.stat-button {
+  color: inherit; font: inherit; text-align: left; cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+.stat-button:hover { transform: translateY(-2px); border-color: rgba(217, 180, 91, 0.45); }
+.stat-button:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 2px; }
+
+/* ---------- guild level/progress widget (home) ---------- */
+.guild-progress-level {
+  font-family: var(--serif); font-size: 20px; font-weight: 700; margin-bottom: 10px;
+}
+.guild-progress-track {
+  height: 10px; border-radius: 999px; overflow: hidden;
+  background: var(--bg); border: 1px solid var(--border-soft);
+}
+.guild-progress-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--orange), var(--gold));
+}
+.guild-progress-note { font-size: 13px; margin-top: 10px; }
+
+/* ---------- cards / grid ---------- */
+.card {
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.card-title {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 0.5px;
+  font-size: 19px; font-weight: 700; margin-bottom: 6px;
+}
+
+/* ---------- site-admin Users page ---------- */
+/* Counts above the table: how many accounts can sign in, how many were here
+   this week, and the split by tier. auto-fit rather than a fixed column count
+   so the row collapses to two-up on a phone without a media query. */
+.admin-user-summary {
+  display: grid; gap: 10px; margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+.admin-user-stat {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+}
+.admin-user-stat-label {
+  color: var(--muted); font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.admin-user-stat-value { font-size: 24px; font-weight: 700; margin-top: 3px; }
+.admin-user-stat-value.tone-green { color: var(--green); }
+.admin-user-stat-value.tone-gold { color: var(--gold); }
+.admin-user-stat-value.tone-teal { color: var(--teal); }
+
+/* Avatar, name and any badges on one baseline; the gap replaces the
+   margin-left each badge would otherwise need for itself. */
+.admin-user-name { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.admin-user-actions { text-align: right; white-space: nowrap; }
+/* Smaller than the site's default .btn, which is sized for a standalone
+   call-to-action rather than a pair of controls repeated down every row. */
+.admin-user-btn { padding: 5px 12px; font-size: 12px; margin-left: 6px; }
+/* Sign out is the milder of the two, so it reads as an outline rather than
+   competing with Revoke's filled danger button. */
+.admin-user-btn:not(.danger):not(.success) {
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+}
+.admin-user-btn:not(.danger):not(.success):hover {
+  color: var(--text); border-color: rgba(217, 180, 91, 0.45);
+}
+.admin-user-error {
+  color: var(--red-text); font-size: 12px; margin-top: 4px; white-space: normal;
+}
+
+.admin-user-pin {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: flex-end;
+  margin-top: 6px; white-space: normal; font-size: 12px;
+}
+.admin-user-pin .muted { flex-basis: 100%; text-align: right; }
+
+/* Users page: link exceptions */
+.link-exc-sub { margin: -2px 0 14px; font-size: 13px; }
+.link-exc-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.link-exc-form input.text { flex: 1 1 200px; min-width: 0; }
+.link-exc-flagged { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; font-size: 13px; }
+.link-exc-id { font-size: 12px; }
+.link-exc-scroll { overflow-x: auto; }
+.revoked-list { margin-top: 14px; }
+.revoked-list > summary { cursor: pointer; font-size: 13px; }
+.revoked-list > .table { margin-top: 8px; }
+
+/* ---------- interactive diagnostic charts ---------- */
+.chart-card { min-width: 0; }
+.chart-card-head { margin-bottom: 12px; }
+.chart-card-head h3 { flex: 1; }
+.chart-icon-button {
+  display: inline-grid; place-items: center; flex: 0 0 auto;
+  width: 32px; height: 32px; padding: 0;
+  color: var(--muted); background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; font-size: 20px; line-height: 1;
+}
+.chart-icon-button:hover { color: var(--text); border-color: rgba(217, 180, 91, 0.5); background: var(--bg-2); }
+.chart-icon-button:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 2px; }
+.chart-plot { position: relative; min-width: 0; }
+.chart-plot svg {
+  display: block; width: 100%; height: auto; min-height: 220px;
+  /* pan-y, not none: the chart wants horizontal drags (scrubbing the time
+     axis) but must not swallow the vertical swipe that scrolls the page --
+     with touch-action:none a finger that lands on a chart trapped the scroll
+     and the page appeared frozen. */
+  touch-action: pan-y;
+}
+.chart-card.expanded .chart-plot svg { height: min(65vh, 620px); min-height: 360px; }
+.chart-tooltip {
+  position: absolute; z-index: 2; top: 10px;
+  min-width: 210px; max-width: min(290px, 75%); padding: 10px 12px;
+  color: var(--text); background: rgba(13, 17, 25, 0.96);
+  border: 1px solid rgba(217, 180, 91, 0.35); border-radius: 9px;
+  box-shadow: var(--shadow); pointer-events: none;
+}
+.chart-tooltip.left { transform: translateX(calc(-100% - 12px)); }
+.chart-tooltip.right { transform: translateX(12px); }
+.chart-tooltip-time { color: var(--muted); font-size: 12px; margin-bottom: 7px; white-space: nowrap; }
+.chart-tooltip-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; font-size: 13px; }
+.chart-tooltip-row + .chart-tooltip-row { margin-top: 4px; }
+.chart-tooltip-row strong { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chart-dialog-backdrop {
+  position: fixed; inset: 0; z-index: 80; display: grid; place-items: center;
+  padding: 24px; background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(5px);
+}
+.chart-dialog { width: min(1400px, 96vw); max-height: 94vh; }
+
+/* ---------- API diagnostics: Ralle user directory ---------- */
+.diagnostics-subnav { justify-content: space-between; }
+.ralle-user-stats { justify-content: flex-start; margin: 0 0 14px; }
+.ralle-user-filters { align-items: end; margin-bottom: 14px; box-shadow: none; }
+.ralle-user-filters label { display: grid; gap: 5px; font-size: 12px; }
+.ralle-user-filters input, .ralle-user-filters select {
+  height: 38px; min-width: 130px; padding: 7px 10px;
+  color: var(--text); background: var(--bg); border: 1px solid var(--border);
+  border-radius: 9px; font: inherit; font-size: 13px;
+}
+.ralle-user-filters input:focus, .ralle-user-filters select:focus {
+  outline: 2px solid rgba(240, 81, 38, 0.35); border-color: var(--orange);
+}
+.ralle-user-filters .ralle-search { flex: 1 1 240px; }
+.ralle-user-filters .ralle-search input { width: 100%; }
+.ralle-users-layout { display: grid; gap: 14px; align-items: start; }
+.ralle-user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); gap: 10px; }
+.ralle-user-card {
+  position: relative; display: flex; align-items: center; gap: 11px; width: 100%; min-width: 0;
+  padding: 12px; color: var(--text); text-align: left; font: inherit; cursor: pointer;
+  background: linear-gradient(180deg, var(--panel), #0d1119); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, .2);
+}
+/* Keep hover paint inside the card; animated shadows reach neighboring pixelated heads. */
+.ralle-user-card:hover { border-color: rgba(217, 180, 91, .45); }
+.ralle-user-card.selected { border-color: var(--orange); background: rgba(240, 81, 38, .08); }
+.ralle-user-card:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 2px; }
+.connection-dot {
+  flex: none; width: 9px; height: 9px; border-radius: 50%; background: #647084;
+  box-shadow: 0 0 0 3px rgba(100, 112, 132, .12);
+}
+.ralle-user-avatar { position: relative; flex: none; width: 32px; height: 32px; }
+.ralle-user-avatar > .connection-dot {
+  position: absolute; right: -3px; bottom: -3px; z-index: 1;
+  box-sizing: border-box; width: 14px; height: 14px;
+  border: 2px solid #0d1119; border-radius: 50%;
+}
+.connection-dot.online { background: var(--green); box-shadow: 0 0 0 3px rgba(46, 204, 113, .12); }
+.connection-dot.error { background: var(--red-text); box-shadow: 0 0 0 3px rgba(239, 68, 68, .12); }
+.ralle-user-card-copy { display: grid; min-width: 0; line-height: 1.3; }
+.ralle-user-card-copy strong { overflow: hidden; text-overflow: ellipsis; font-size: 15px; }
+.ralle-user-card-copy > span, .ralle-user-card-copy small { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+.ralle-user-card-copy > span { font-size: 12px; }
+.ralle-user-card-copy small { margin-top: 3px; font-size: 11px; }
+.ralle-user-card-chevron { margin-left: auto; color: var(--muted); font-size: 25px; }
+.ralle-user-detail { min-width: 0; }
+.ralle-user-statuses { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-top: 9px; }
+.badge.ok { color: #bdf8d4; background: rgba(46, 204, 113, .12); border-color: rgba(46, 204, 113, .3); }
+.ralle-user-overview-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ralle-user-overview-tiles .stat-tile-value { overflow: hidden; font-size: 17px; text-overflow: ellipsis; white-space: nowrap; }
+.ralle-user-session-facts > div { min-width: 0; overflow-wrap: anywhere; }
+.ralle-detail-modal {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ralle-detail-modal::-webkit-scrollbar { display: none; }
+.section-head.ralle-detail-section-head { margin-top: 28px; margin-bottom: 10px; }
+.ralle-detail-section-head h3 { font-size: 15px; }
+.ralle-operation-section {
+  margin-top: 28px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+.ralle-operation-section .section-head.ralle-detail-section-head { margin-top: 0; }
+.segmented.small button { padding: 5px 9px; font-size: 11px; text-transform: capitalize; }
+.ralle-operation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.ralle-operation { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; min-width: 0; padding: 9px 10px; background: var(--bg); border: 1px solid var(--border-soft); border-radius: 8px; }
+.ralle-operation strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.ralle-operation > span { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.ralle-operation .badge { grid-column: 1 / -1; justify-self: start; margin-top: 3px; }
+.ralle-actions-list { display: grid; gap: 4px; }
+.ralle-action-row { display: grid; grid-template-columns: auto minmax(160px, 1fr) auto auto; align-items: center; gap: 9px; padding: 8px 3px; border-top: 1px solid var(--border-soft); font-size: 12px; }
+.ralle-action-row > span:nth-child(2) { display: grid; min-width: 0; }
+.ralle-action-row strong, .ralle-action-row small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ralle-action-row small { color: var(--muted); }
+
+@media (max-width: 600px) {
+  .diagnostics-subnav { align-items: stretch; }
+  .diagnostics-subnav > .segmented { width: 100%; }
+  .diagnostics-subnav > .segmented button { flex: 1; }
+  .ralle-user-filters label { flex: 1 1 140px; }
+  .ralle-user-filters input, .ralle-user-filters select { width: 100%; min-width: 0; }
+  .ralle-user-overview-tiles { grid-template-columns: 1fr; }
+  .ralle-operation-grid { grid-template-columns: 1fr; }
+  .ralle-action-row { grid-template-columns: auto minmax(130px, 1fr) auto; }
+  .ralle-action-row > span:last-child { display: none; }
+}
+.chart-dialog .chart-card { box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55); }
+
+@media (max-width: 680px) {
+  .chart-dialog-backdrop { padding: 8px; }
+  .chart-dialog { width: 100%; }
+  .chart-card.expanded { padding: 12px; }
+  .chart-card.expanded .chart-plot svg { min-height: 300px; }
+  .chart-tooltip { min-width: 180px; max-width: 82%; }
+}
+.collapsible-head { cursor: pointer; user-select: none; list-style: none; }
+.collapsible-head::-webkit-details-marker { display: none; }
+.collapsible-head::after { content: "▸"; color: var(--muted); margin-left: auto; font-size: 13px; }
+details[open] > .collapsible-head::after { content: "▾"; }
+.collapsible-head:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 4px; }
+.grid { display: grid; gap: 16px; }
+.grid.cols-2 { grid-template-columns: 1fr 1fr; }
+@media (max-width: 820px) { .grid.cols-2 { grid-template-columns: 1fr; } }
+
+.cosmetic-badges { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.cosmetic-badges .pill { font-size: 10px; white-space: nowrap; }
+.cosmetic-section { margin: 16px 0; display: grid; gap: 7px; }
+.cosmetic-section p { margin: 4px 0; }
+.cosmetic-grant-choices { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 9px 0; }
+.cosmetic-grant-choices label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+/* ---------- tables ---------- */
+.table { width: 100%; border-collapse: collapse; }
+.table th {
+  text-align: left; color: var(--muted); font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+}
+.table td { padding: 9px 10px; border-bottom: 1px solid var(--border-soft); }
+.table tr:last-child td { border-bottom: 0; }
+.table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+/* .table th's own selector otherwise outweighs .val's (extra element vs. extra
+   class), so a `<th class="val">` column header stayed left-aligned above a
+   right-aligned .val column of numbers — this reasserts the right-align. */
+.table th.val { text-align: right; }
+
+.territory-map-viewport {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: #081018;
+}
+.territory-map-fullscreen {
+  position: relative;
+  width: 100%;
+  min-height: 420px;
+}
+/* Above .territory-panel's z-index 25, not below it. The detail card is
+   top-right and the control row is bottom-right in the same 360px-wide
+   column, so on a short screen (a laptop, or any window under ~800px tall)
+   an expanded tower simulator grows down into the controls. The cap on
+   .territory-panel's own height below is the real fix; this makes sure that
+   if anything ever does overlap — a longer panel, a future layout — the
+   menu and its popups stay on top and clickable rather than being painted
+   over by the card. */
+.territory-map-controls {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+}
+/* Right-hand side, stacked directly above the control row rather than a
+   corner of its own — the top-right corner is .territory-panel's spot
+   whenever a territory is selected, and any other free corner drifts into
+   the map's own content. This is the desktop/mouse size — bigger than
+   touch gets (see the readable-on-desktop override in the
+   `pointer: coarse` block below, which also shrinks the control row back
+   up: touch keeps its own already-tight-enough margins rather than
+   inheriting this one's). bottom: 61px and a 30px-tall row (line-height
+   18px + 5px padding each side + 1px border each side) clears the 44px
+   mouse-only control row (see .territory-map-settings-toggle) against
+   .territory-panel's 96px cutoff — used both by the absolute-positioned
+   desktop/wide panel and the narrow-width bottom sheet, deliberately the
+   same number rather than two close-but-different ones (see that
+   element's own comment for why a thinner, sheet-specific value wasn't
+   safe in practice) — with a 5px margin on both sides. Landscape pins the
+   panel left instead, so there's nothing to clear there but the control
+   row itself. */
+.territory-map-res-tick {
+  position: absolute;
+  bottom: 61px;
+  right: 12px;
+  z-index: 20;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: rgba(10, 16, 26, 0.85);
+  backdrop-filter: blur(6px);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  white-space: nowrap;
+}
+/* Deliberately *not* a positioned ancestor: each popup below is absolutely
+   positioned with right: 0, so leaving this static makes the containing
+   block .territory-map-controls — the whole control row — rather than the
+   one 44px toggle the popup happens to hang off. Anchored per-button, the
+   leftmost toggle sits ~216px in from the window's right edge and its
+   300px-wide guild panel opened ~516px in, i.e. floating in the middle of a
+   desktop window instead of along the edge its controls live on; the four
+   panels also each opened somewhere different. Row-anchored, all four open
+   flush right, in the same place, directly above the row. The button's own
+   position still never shifts when a panel opens or closes — an absolutely
+   positioned panel is out of normal flow either way, which is the property
+   that mattered here. (The phone and landscape blocks further down switch
+   these popups to position: fixed against the viewport, so they are
+   unaffected by this.) */
+.territory-map-control {
+  position: static;
+}
+
+.territory-map-settings-toggle {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(8, 16, 24, 0.85);
+  color: var(--text);
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+}
+.territory-map-settings-toggle:hover { background: var(--bg-2); border-color: rgba(255, 122, 69, 0.55); }
+.territory-map-settings-toggle-icon {
+  width: 22px;
+  height: 22px;
+}
+.territory-map-settings-panel {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 240px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(8, 14, 22, 0.94);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+/* Search results can still run long for a busy server — cap and scroll
+   instead of the popup growing past the viewport. */
+.territory-map-settings-panel-scroll {
+  max-height: min(320px, calc(100vh - 220px));
+  overflow-y: auto;
+  margin: 0 -6px;
+  padding: 0 6px;
+  /* A thin, gold-tinted scrollbar (the app's existing accent for focus/
+     active states elsewhere) instead of the browser default — still a
+     visible scroll cue, just styled to match the dark popup it lives in. */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 180, 91, 0.4) transparent;
+}
+.territory-map-settings-panel-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.territory-map-settings-panel-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.territory-map-settings-panel-scroll::-webkit-scrollbar-thumb {
+  background: rgba(217, 180, 91, 0.4);
+  border-radius: 999px;
+}
+.territory-map-settings-panel-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(217, 180, 91, 0.65);
+}
+/* ---- Phone control sheet ----
+   One button opens one panel with a tab strip, instead of four buttons each
+   opening their own. Only ever rendered on a coarse pointer (see
+   compactControls in TerritoryMap.jsx), so these need no media query of
+   their own — the panel geometry comes from .territory-map-settings-panel's
+   own phone/landscape rules. */
+.territory-map-sheet-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.territory-map-sheet-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 46px;
+  padding: 6px 2px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+.territory-map-sheet-tab.active {
+  background: rgba(255, 122, 69, 0.14);
+  border-color: rgba(255, 122, 69, 0.5);
+  color: var(--text);
+}
+.territory-map-sheet-tab-icon { width: 18px; height: 18px; }
+.territory-map-sheet-tab-label { font-size: 11px; }
+.territory-map-sheet-divider {
+  height: 1px;
+  margin: 10px 0 8px;
+  background: var(--border-soft);
+}
+/* An action, not a toggle — full width so it does not read as another row in
+   the layer list above it. */
+.territory-map-sheet-action {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 9px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.territory-map-sheet-action:active { background: var(--bg-2); }
+
+.territory-map-settings-hint {
+  padding: 16px 8px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  font-style: italic;
+}
+.territory-map-guild-swatch {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* ---- Guild-search popup: wider than the plain toggle panels, with its own
+   title/sections so the three states (search / selected / results) read as
+   distinct instead of one dense stack. ---- */
+.territory-map-guild-panel {
+  min-width: 300px;
+  padding: 12px;
+  gap: 0;
+}
+.territory-map-guild-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.territory-map-guild-search-field {
+  position: relative;
+  margin-bottom: 10px;
+}
+.territory-map-guild-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.territory-map-guild-search {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 10px 9px 32px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.territory-map-guild-search:focus { outline: none; border-color: rgba(217, 180, 91, 0.5); }
+.territory-map-guild-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.territory-map-guild-selected .territory-map-guild-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.territory-map-guild-clear {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--muted);
+  cursor: pointer;
+}
+.territory-map-guild-clear:hover { color: var(--red); }
+.territory-map-guild-selected {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.territory-map-guild-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.territory-map-guild-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 9px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-soft);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.territory-map-guild-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.territory-map-guild-chip-remove:hover { background: var(--red); color: #fff; }
+.territory-map-guild-prefix {
+  color: var(--muted);
+  font-weight: 600;
+  margin-left: 5px;
+}
+/* A plain clickable row (add-to-selection) rather than a switch — resets
+   the <button> defaults while still picking up .territory-map-settings-row's
+   spacing/hover styling. */
+.territory-map-guild-result {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font: inherit;
+}
+.territory-map-guild-result-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.territory-map-guild-result-add {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 122, 69, 0.15);
+  color: var(--orange-2);
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.territory-map-guild-result:hover .territory-map-guild-result-add,
+.territory-map-guild-result:focus-visible .territory-map-guild-result-add {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ---- Leaderboard popup: a small two-way tab switcher above a plain
+   read-only ranked list, reusing the guild-search popup's panel/swatch/
+   prefix styling rather than introducing a second visual language. ---- */
+.territory-map-leaderboard-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.territory-map-leaderboard-tab {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.territory-map-leaderboard-tab:hover { color: var(--text); }
+.territory-map-leaderboard-tab.active {
+  background: var(--bg-2);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(217, 180, 91, 0.35);
+}
+.territory-map-leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+.territory-map-leaderboard-row:hover { background: var(--bg-2); }
+.territory-map-leaderboard-rank {
+  flex: none;
+  width: 26px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.territory-map-leaderboard-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.territory-map-leaderboard-value {
+  flex: none;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.territory-map-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.territory-map-settings-row:hover { background: var(--bg-2); }
+.territory-map-settings-row.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.territory-map-settings-row.disabled:hover { background: transparent; }
+/* A pill-shaped on/off switch, styled from a plain checkbox (its native
+   checked/unchecked state and click-to-toggle behavior still drive it —
+   only the appearance is replaced). */
+.territory-map-settings-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  /* Off-state track was near-invisible before — same near-black as the
+     panel it sits on with only a 1px, 6%-opacity border. A frosted-white
+     fill plus a solid, brighter border makes "off" as legible as "on". */
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.14);
+  cursor: inherit;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.territory-map-settings-row input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #d7dce6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.territory-map-settings-row input[type="checkbox"]:checked {
+  background: var(--orange-2);
+  border-color: var(--orange-2);
+}
+.territory-map-settings-row input[type="checkbox"]:checked::after {
+  background: #fff;
+  transform: translateX(18px);
+}
+.territory-map-settings-row input[type="checkbox"]:disabled {
+  opacity: 0.6;
+}
+.territory-map-pan {
+  cursor: grab;
+  touch-action: none;
+}
+.territory-map-pan.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+/* .territory-map-camera, .territory-map-stage, .territory-main-map,
+   .territory-main-map-tile and .territory-realm-inset are gone with the DOM
+   they styled. The base map art is drawn onto .territory-map-canvas now (see
+   drawMapTiles in TerritoryMap.jsx) rather than being <img> elements inside a
+   `will-change: transform` layer holding the whole 4608x6144 stage at the
+   current zoom. That layer panned cheaply while it was warm and catastrophi-
+   cally when it was not: a backgrounded tab has its raster and GPU-side
+   resources reclaimed, and rebuilding them over an interest rect that size
+   cost ~340ms a frame with the main thread idle. On the canvas the raster
+   work is bounded by the viewport instead of by the stage. */
+
+/* The territory markers and the trade-route lines are drawn on
+   .territory-map-canvas now, not as ~2500 DOM nodes inside the camera
+   transform, so every rule that styled them lives in TerritoryMap.jsx's draw
+   loop instead (drawMarkerBoxes / drawRouteLines carry the widths and colours
+   these rules used to). The HQ pulse went with them: an infinite animation on
+   every HQ marker kept the page off idle forever, and the crown icon on the
+   canvas already marks an HQ.
+
+   Sits outside .territory-map-camera's scale() transform (as a sibling, not a
+   descendant) so everything is rasterized at native resolution rather than
+   being a bitmap the browser resamples per zoom level — that resampling is
+   what used to blur labels at high zoom, and what made a pan cost a full
+   software re-raster of the whole subtree with hardware acceleration off.
+   Backing-store size and all drawing are handled in JS (drawMap). */
+.territory-map-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* The keyboard and screen-reader route to the map, standing in for the
+   role="button" markers the canvas replaced. Clipped rather than hidden with
+   `display: none` or `visibility: hidden`, either of which would also drop it
+   out of the accessibility tree and defeat the point. Focusing an entry draws
+   a focus ring on the canvas (see focusedName in TerritoryMap.jsx). */
+.territory-map-a11y-list {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  list-style: none;
+}
+.territory-map-a11y-list button {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+}
+
+/* Resources on the left, Time Held / Treasury / Defence stacked on the
+   right — one row instead of a Production section, a stats block and a
+   Storage section stacked on top of each other, which is most of what let
+   an expanded Tower Simulator push the panel past a laptop screen. */
+.territory-panel-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+}
+.territory-panel-section-head {
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+.territory-panel-resources {
+  min-width: 0;
+}
+.territory-panel-resource {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+}
+.territory-panel-resource-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+}
+.territory-panel-resource-lines {
+  min-width: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+.territory-panel-resource-rate {
+  font-weight: 700;
+  color: #7ee2a8;
+}
+.territory-panel-resource-stored {
+  font-weight: 600;
+}
+.territory-panel {
+  position: absolute;
+  z-index: 25;
+  top: 12px;
+  right: 12px;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  /* Stops 98px above the map's bottom edge: the control row is 44px tall and
+     sits 12px off that edge, with .territory-map-res-tick's own 30px-tall
+     row stacked above that at bottom: 61px (see its comment), so its top
+     edge is 91px up and this leaves a 7px gap — both directly beneath this
+     card in the same right-hand column. The subtraction is 110px, not 98px,
+     because this card also starts 12px down from the top (`top: 12px`
+     above): a max-height of `100% - 96px` actually ended the card 84px from
+     the bottom, 8px into the res-tick row, which is what an expanded tower
+     simulator ran into on laptop-height windows. The panel still scrolls
+     internally, so on a genuinely short screen the cost is an earlier scroll
+     rather than hidden content, and on a tall one the cap never binds. */
+  max-height: calc(100% - 110px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 14px 14px 12px;
+  border-radius: 12px;
+  background: rgba(10, 16, 26, 0.96);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+}
+.territory-panel::-webkit-scrollbar {
+  display: none;
+}
+.territory-panel-divider {
+  height: 1px;
+  margin: 12px 0 2px;
+  background: var(--border-soft);
+}
+.territory-panel-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.territory-panel-close:hover { background: var(--bg-2); color: var(--text); }
+.territory-panel-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-right: 20px;
+}
+.territory-panel-swatch {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 5px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+.territory-panel-titles {
+  min-width: 0;
+}
+/* Territory first, as the headline; the owning guild underneath as its
+   byline, truncated rather than wrapped so a long guild name can't push the
+   rest of the panel down. */
+.territory-panel-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+.territory-panel-guild {
+  margin-top: 1px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.territory-panel-tag {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.territory-panel-hq {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 214, 120, 0.18);
+  color: #ffd678;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  vertical-align: 2px;
+}
+.territory-panel-row {
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-soft);
+}
+.territory-panel-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.territory-panel-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 92px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border-soft);
+}
+/* No resources to sit beside (an unclaimed or empty territory): the stats
+   column is the whole row, so it loses the divider it would otherwise draw
+   against them. */
+.territory-panel-stats:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.territory-panel-stat .territory-panel-value {
+  display: block;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+.territory-panel-stat-label {
+  display: block;
+  line-height: 1.3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.territory-sim-toggle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.territory-sim-title {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.territory-sim-toggle-header .territory-sim-title {
+  margin-bottom: 0;
+}
+.territory-sim-chevron {
+  width: 16px;
+  height: 16px;
+  margin-bottom: 8px;
+  color: var(--gold);
+  transition: transform 150ms ease;
+}
+.territory-sim-chevron.open {
+  transform: rotate(180deg);
+}
+/* External directions (members only) — see ExternalDirectionsCard. */
+/* Only the button and card take the pointer: the rest of the wrapper's box
+   is empty map that should keep hovering as normal. */
+.territory-directions-wrap {
+  position: absolute;
+  z-index: 26;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: none;
+}
+.territory-directions-wrap.left {
+  align-items: flex-end;
+}
+.territory-directions-wrap.up {
+  flex-direction: column-reverse;
+}
+.territory-directions-wrap > * {
+  pointer-events: auto;
+}
+.territory-directions-toggle {
+  height: 24px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(10, 16, 26, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.territory-directions-toggle:hover {
+  border-color: var(--orange-2);
+}
+.territory-directions-toggle.on {
+  color: #fff;
+  background: var(--orange);
+  border-color: var(--orange);
+}
+.territory-directions {
+  align-self: stretch;
+  padding: 10px 8px 8px;
+  border-radius: 12px;
+  background: rgba(10, 16, 26, 0.96);
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+}
+.territory-directions-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 6px 8px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 4px;
+}
+.territory-directions-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.territory-directions-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+.territory-directions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 8px;
+}
+.territory-directions-row.active {
+  background: rgba(255, 255, 255, 0.06);
+}
+.territory-directions-all {
+  margin-top: 4px;
+  border-top: 1px solid var(--border-soft);
+  border-radius: 0;
+  padding-top: 8px;
+}
+.territory-directions-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.territory-directions-label {
+  color: var(--text);
+}
+.territory-directions-all .territory-directions-label {
+  color: var(--muted);
+}
+.territory-directions-count {
+  color: var(--muted);
+}
+.territory-directions-copy {
+  margin-left: auto;
+}
+.territory-sim-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+.territory-sim-control {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.territory-sim-control-full {
+  grid-column: 1 / -1;
+}
+.territory-sim-control-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.territory-sim-control-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.territory-sim-control-level {
+  flex: none;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.territory-sim-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.territory-sim-step-btn {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+.territory-sim-step-btn:hover:not(:disabled) {
+  border-color: rgba(255, 122, 69, 0.55);
+  color: var(--orange-2);
+}
+.territory-sim-step-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.territory-sim-step-btn-minus {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+.territory-sim-step-btn-minus:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.75);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+.territory-sim-step-btn-plus {
+  border-color: rgba(46, 204, 113, 0.4);
+  color: var(--green);
+}
+.territory-sim-step-btn-plus:hover:not(:disabled) {
+  border-color: rgba(46, 204, 113, 0.75);
+  background: rgba(46, 204, 113, 0.12);
+  color: var(--green);
+}
+.territory-sim-step-btn-minus:disabled,
+.territory-sim-step-btn-plus:disabled {
+  border-color: var(--border-soft);
+  background: transparent;
+  color: var(--text);
+}
+.territory-sim-control-effect {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+}
+.territory-sim-toggle-group {
+  display: flex;
+  gap: 6px;
+}
+.territory-sim-toggle {
+  flex: 1;
+  padding: 4px 0;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+}
+.territory-sim-toggle:hover {
+  border-color: rgba(255, 122, 69, 0.55);
+  color: var(--orange-2);
+}
+.territory-sim-toggle.active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #1a0e08;
+}
+/* HP, Damage, Defense and the copy button on one row. Wraps rather than
+   clipping if a wider font pushes the button past the edge — at worst-case
+   HQ numbers it measured with only a pixel to spare. */
+.territory-sim-outputs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px 10px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-soft);
+}
+.territory-sim-output {
+  display: flex;
+  flex-direction: column;
+}
+.territory-sim-output-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.territory-sim-output-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--orange-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.territory-sim-copy-btn {
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--orange-2);
+  background: rgba(240, 81, 38, 0.1);
+  border: 1px solid rgba(240, 81, 38, 0.35);
+  border-radius: 6px;
+  padding: 4px 9px;
+  cursor: pointer;
+}
+.territory-sim-copy-btn:hover { background: rgba(240, 81, 38, 0.18); }
+body.war-map-page { overflow: hidden; }
+body.war-map-page .footer { display: none; }
+body.war-map-page .container {
+  max-width: none;
+  padding: 0;
+}
+/* Lootpools' side-by-side pool cards want more breathing room than the
+   site's usual ~1100px reading-width column — see the .loot-pool-row
+   comment below for why 1500px. The site's usual 60px bottom padding is
+   sized for a scrolling reading column with a footer well below the fold;
+   here the card row is already capped to fit the viewport (see
+   .loot-pool-card's max-height below), so that much padding just pushes the
+   footer past the bottom of the screen and forces a page-level scrollbar for
+   the last few pixels. A slimmer bottom padding keeps the footer within the
+   viewport without touching the cards' own sizing or scrolling at all. */
+body.loot-pools-page .container { max-width: 1500px; padding-bottom: 16px; }
+
+/* Same fixed-width-via-colgroup idea used elsewhere for rank tables, but rank
+   descriptions run long and should wrap rather than truncate, so no
+   nowrap/ellipsis here. */
+.ranks-table { table-layout: fixed; }
+.ranks-table td { vertical-align: top; }
+.rank { color: var(--muted); font-variant-numeric: tabular-nums; width: 46px; white-space: nowrap; }
+.val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--orange-2); white-space: nowrap; }
+/* A secondary right-aligned numeric column (e.g. SeasonRatingTable's "Gap to
+   above"/"24h change") — same alignment/digit-tabulation as .val, without
+   competing with it for visual weight against the row's headline number. */
+.val.muted { color: var(--muted); font-weight: 500; }
+
+/* leaderboard bars: a subtle fill behind the name, relative to the leader */
+.name-cell { position: relative; }
+.name-cell .bar {
+  position: absolute; left: 0; top: 5px; bottom: 5px;
+  background: linear-gradient(90deg, rgba(240, 81, 38, 0.34), rgba(240, 81, 38, 0.05));
+  border-radius: 4px; pointer-events: none;
+}
+.name-cell span { position: relative; }
+
+/* ---------- members: card grid ---------- */
+/* The roster's default view. Cards are deliberately narrow — the grid should
+   fit 4-5 across a desktop container so a 200-member roster still reads as a
+   roster rather than a scroll. The dense table is one toggle away for anyone
+   who wants columns instead. */
+.member-grid {
+  display: grid; gap: 12px;
+  /* >= .row-menu's own min-width (220px) so the staff "⋯" dropdown never has
+     to overflow past its own card's edge into a neighboring card. */
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+/* Trial Member's "Split by recruit class" view: pending on the left, class
+   complete on the right, each with its own .member-grid — where a recruit
+   stands is the column they're in, not a filter that hides the other half. */
+.class-split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.class-split-col + .class-split-col { border-left: 1px solid var(--border-soft); padding-left: 18px; }
+.class-split-head {
+  font-weight: 700; font-size: 13px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.member-card {
+  position: relative;
+  padding: 12px 12px 10px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border);
+  /* Overridden per card with the rank category's colour, the same accent the
+     section's heading and left border use. */
+  border-left: 3px solid var(--orange);
+  border-radius: 10px;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+  /* The whole card is the click target (opens the player panel), not just
+     the name/avatar row — cursor and focus styling live here now instead of
+     on .member-card-open, which is a plain div these days. */
+  cursor: pointer;
+}
+/* The inline border-left-color (the rank accent) outranks this shorthand, so
+   hovering warms the other three edges and leaves the accent alone.
+   z-index matters here: the hover transform makes the card a stacking
+   context, which traps an open "⋯" menu inside it — without this, the next
+   card in the grid paints over the menu simply by coming later in the DOM.
+   :focus-within elevates the same way once the "⋯" button (or a menu item)
+   holds focus, so the menu stays on top even if the pointer isn't still over
+   the card — a plain click-then-move can outrun :hover alone. */
+.member-card:hover, .member-card:focus-within {
+  transform: translateY(-2px); border-color: rgba(217, 180, 91, 0.45); z-index: 2;
+}
+.member-card:hover .member-card-name, .member-card:focus-within .member-card-name {
+  color: var(--orange-2);
+}
+.member-card:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 3px; }
+/* padding-right clears .member-card-status in the corner above it — without
+   it a long enough name would truncate right where the status badge starts
+   overlapping instead of before it. */
+.member-card-open {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 0 70px 0 0; margin-bottom: 6px;
+  color: var(--text); text-align: left;
+}
+.member-card-name {
+  /* --name-color is set inline per-card to the member's rank colour (see
+     nameColor() in lib.js); the var() fallback covers cards that don't set it. */
+  color: var(--name-color, var(--text));
+  font-weight: 700; font-size: 15px;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.member-card-title {
+  font-size: 13px; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.member-card-meta {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 5px; font-size: 12px; min-height: 18px;
+}
+/* Online state / on-leave / warned / last-seen, pinned to the card's top
+   right corner rather than sitting in the meta rows below the name. */
+.member-card-status {
+  position: absolute; top: 12px; right: 12px; z-index: 1;
+  font-size: 11px; text-align: right; max-width: 90px;
+}
+.member-card-stats {
+  margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--border-soft);
+  font-size: 12px; font-variant-numeric: tabular-nums;
+}
+/* Staff-only recruit-class toggle (Trial Member cards only) — sits in the
+   card's normal flow, below everything else, rather than overlaid on it. */
+.member-card-actions { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--border-soft); }
+.member-card-actions .btn { padding: 2px 8px; font-size: 13px; }
+
+/* The roster table's head doubles as the player-panel trigger (the name
+   itself still links out to Wynncraft). */
+.roster-head-button {
+  padding: 0; margin-right: 6px; background: transparent; border: 0;
+  cursor: pointer; vertical-align: middle; line-height: 0;
+}
+.roster-head-button:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 2px; border-radius: 5px; }
+
+/* The per-section "Rank guide ▸" disclosure that folded the old /ranks chart
+   in next to the members it describes. */
+.rank-guide-toggle {
+  background: transparent; border: 1px solid var(--border); border-radius: 999px;
+  color: var(--muted); font-size: 11px; font-weight: 700; cursor: pointer;
+  padding: 3px 9px; white-space: nowrap;
+}
+.rank-guide-toggle:hover { color: var(--text); border-color: rgba(217, 180, 91, 0.45); }
+
+/* ---------- leaderboard: one sortable table ---------- */
+.leaderboard-table td { vertical-align: middle; }
+.lb-row { cursor: pointer; }
+.lb-row:focus-visible { outline: 2px solid var(--orange-2); outline-offset: -2px; }
+/* Sits above .name-cell's bar fill, which is absolutely positioned behind it. */
+.lb-player { position: relative; display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.lb-player > span:first-of-type { font-weight: 700; }
+
+/* Column headers that sort. Right-aligned to sit over their numbers, and
+   full-height so the whole header cell is the hit target. */
+.sort-th {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: transparent; border: 0; cursor: pointer; padding: 0;
+  color: inherit; font: inherit; text-transform: inherit; letter-spacing: inherit;
+}
+.sort-th:hover:not(:disabled) { color: var(--text); }
+.sort-th.on { color: var(--orange-2); }
+.sort-th:disabled { cursor: default; opacity: 0.5; }
+.sort-th:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 3px; }
+.sort-caret { font-size: 9px; }
+/* The Raids header is the one .val column that carries a second control
+   (this chevron) alongside its sort button. Left in normal inline flow, that
+   second element is what text-align:right on the th actually pushes flush
+   against the edge — the sort button (and "Raids" itself) ends up sitting
+   however much narrower the chevron is to the LEFT of where the column's
+   own right-aligned numbers land below it, reading as a misaligned header
+   even though the <th>/<td> boxes line up exactly. Taking the chevron out of
+   flow (th.val is the positioning context) lets .sort-th alone own the
+   right edge, flush with the data underneath; the chevron floats just past
+   it in the cell's own padding rather than competing for that edge. */
+.table th.val { position: relative; }
+.raid-expand {
+  position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
+  padding: 0 4px;
+  background: transparent; border: 0; cursor: pointer;
+  color: var(--muted); font-size: 11px;
+}
+.raid-expand:hover { color: var(--orange-2); }
+.raid-col { font-size: 12px; }
+/* Raid event history's own per-raid-split toggle: a full-text button sitting
+   in normal flow above its table, not a chevron riding a th.val's sort
+   button — .raid-expand's absolute positioning (relative to whatever
+   positioned ancestor it lands under here, not a th.val) put it in the wrong
+   place entirely, so this gets its own unpositioned rule instead of sharing
+   that class. */
+.raid-split-toggle {
+  padding: 0 4px;
+  background: transparent; border: 0; cursor: pointer;
+  color: var(--muted); font-size: 11px;
+}
+.raid-split-toggle:hover { color: var(--orange-2); }
+
+/* Phone sort picker (Leaderboard.jsx). Hidden here; mobile.css shows it once
+   the table stacks into cards and its sortable header row goes away. */
+.lb-mobile-sort { display: none; align-items: center; gap: 8px; }
+.lb-sort-label { color: var(--muted); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.lb-sort-select,
+.lb-sort-dir {
+  background: var(--bg); color: var(--text); font: inherit; font-size: 14px; font-weight: 700;
+  border: 1px solid var(--border); border-radius: 10px; padding: 0 12px; cursor: pointer;
+}
+.lb-sort-select { flex: 1 1 auto; min-width: 0; }
+.lb-sort-dir { flex: 0 0 auto; white-space: nowrap; }
+.lb-sort-select:focus-visible,
+.lb-sort-dir:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 2px; }
+
+/* ---------- player panel (shared by both pages) ---------- */
+.player-panel-head { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
+.player-panel-title {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 0.5px;
+  font-size: 19px; font-weight: 700;
+}
+.stat-tiles { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+.stat-tile {
+  padding: 10px 12px; background: var(--bg); border: 1px solid var(--border-soft);
+  border-radius: 10px;
+}
+.stat-tile-label {
+  color: var(--muted); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+.stat-tile-value {
+  font-size: 20px; font-weight: 700; color: var(--orange-2);
+  font-variant-numeric: tabular-nums;
+}
+.stat-tile-sub { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.player-facts {
+  display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-soft);
+  font-size: 13px;
+}
+.player-fact-label {
+  color: var(--muted); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+
+/* Card hover lift and the panel's transitions are decoration; honour a
+   reduced-motion preference by dropping the movement, not the styling. */
+@media (prefers-reduced-motion: reduce) {
+  .member-card { transition: none; }
+  .member-card:hover { transform: none; }
+}
+
+/* ---------- badges / bits ---------- */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.badge.staff { background: rgba(217, 180, 91, 0.14); color: var(--gold); border: 1px solid rgba(217, 180, 91, 0.35); }
+.badge.online { background: rgba(46, 204, 113, 0.15); color: var(--green); }
+.badge.leave { background: rgba(152, 161, 181, 0.15); color: var(--muted); }
+.badge.warn { background: rgba(143, 29, 52, 0.22); color: #ff8a6a; border: 1px solid rgba(143, 29, 52, 0.55); }
+/* A problem that has since stopped (e.g. loop failures older than an hour on
+   the metrics page): still worth seeing, no longer an alert. */
+.badge.past { background: rgba(217, 180, 91, 0.14); color: var(--gold); border: 1px solid rgba(217, 180, 91, 0.35); }
+.badge.guaranteed { background: rgba(46, 204, 113, 0.15); color: var(--green); border: 1px solid rgba(46, 204, 113, 0.35); margin-left: 4px; }
+
+.unlinked-card { border-color: rgba(231, 76, 60, 0.4); }
+
+/* Access tiers on the site-admin Users page. Each tier gets its own hue so a
+   glance down the column reads as a hierarchy rather than a list: orange (the
+   site's own accent) for site admins, the same gold .badge.staff already uses
+   for staff, teal for the Royal Engineers' metrics-only login, and plain muted
+   for a rank-and-file member. */
+.badge.tier-admin {
+  background: rgba(240, 81, 38, 0.14); color: var(--orange-2);
+  border: 1px solid rgba(240, 81, 38, 0.4);
+}
+.badge.tier-staff {
+  background: rgba(217, 180, 91, 0.14); color: var(--gold);
+  border: 1px solid rgba(217, 180, 91, 0.35);
+}
+.badge.tier-engineer {
+  background: rgba(46, 196, 214, 0.13); color: var(--teal);
+  border: 1px solid rgba(46, 196, 214, 0.35);
+}
+.badge.tier-member {
+  background: rgba(152, 161, 181, 0.15); color: var(--muted);
+  border: 1px solid rgba(152, 161, 181, 0.3);
+}
+
+/* ---------- loot pools ---------- */
+/* One row, every card sharing the width evenly, so every pool's title sits
+   next to every other one on load — wraps to more rows only once a card
+   would be squeezed under its min-width (narrow viewports). body.loot-
+   pools-page widens .container to 1500px (vs. the site's usual 1100px,
+   see above) precisely so 7 cards (the most any one tab has) have room to
+   be legible in one row.
+   align-items: flex-start (not stretch) so each card sizes to its own
+   content instead of being forced to match its tallest sibling — every
+   card is now a <details> a user can collapse independently, and stretch
+   would otherwise leave a collapsed card's empty space still occupying the
+   full row height. */
+.loot-pool-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.loot-pool-row .loot-pool-card { flex: 1 1 0; min-width: 180px; }
+/* Height tracks the viewport (roughly what's left below the header/toolbar
+   and above the footer) instead of a fixed pixel value, so the cards use
+   that leftover space rather than leaving it empty — it's a max-height, so
+   a card with less content than that just sits shorter, it never stretches
+   to fill it. Scrolls its own overflow: a pool's full reward list is a
+   scroll inside that one card rather than the whole page. A slim gold top
+   edge and a hover lift give each card a touch of depth instead of a flat
+   outline sitting on the page. */
+.loot-pool-card {
+  min-width: 0; max-height: calc(100vh - 365px); overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  border-top: 2px solid rgba(217, 180, 91, 0.35);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.loot-pool-card:hover {
+  border-color: rgba(217, 180, 91, 0.55);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(217, 180, 91, 0.1);
+}
+/* Themed scrollbar (Chromium/Safari — Firefox gets the scrollbar-color pair
+   above) so the internal scroll reads as part of the dark UI, not a bare OS
+   control dropped on top of it. */
+.loot-pool-card::-webkit-scrollbar { width: 8px; }
+.loot-pool-card::-webkit-scrollbar-track { background: transparent; }
+.loot-pool-card::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.loot-pool-card::-webkit-scrollbar-thumb:hover { background: rgba(217, 180, 91, 0.45); }
+
+/* Overrides .card-title's small-caps — fine for a short word like
+   "Members", but pool names ("Orphion's Nexus of Light", "The Nameless
+   Anomaly") are longer, mixed-case, and often carry an apostrophe;
+   small-caps compresses their lowercase letters into smaller uppercase
+   forms, which is what actually fights a quick scan across 5-7 cards, not
+   the serif itself. Keeping var(--serif) (just in plain mixed case) reads
+   just as fast as a sans-serif swap while staying the site's own type,
+   rather than a UI-chrome font sitting oddly among the rest of the page's
+   headings. */
+.loot-pool-title {
+  margin-bottom: 12px;
+  font-variant: normal; letter-spacing: normal;
+}
+
+/* Each rarity tier is set off with a hairline rule (echoing the gold .rule
+   under the page title, just quieter) rather than spacing alone. */
+/* content-visibility skips layout and paint entirely for the groups scrolled
+   out of view inside .loot-pool-card. A raid tab is ~300 reward rows across
+   five cards and a lootrun tab ~295 across seven, of which maybe a third are
+   ever on screen at once — without this the browser lays out and rasterizes
+   every row of every card up front, which is most of what this page costs on
+   first paint. `contain-intrinsic-size: auto 220px` gives an offscreen group a
+   placeholder height (so the cards' scrollbars are the right size from the
+   start) and the `auto` keyword makes the browser remember each group's real
+   height once it has been rendered once, so scrolling back over it doesn't
+   shift anything. Nothing inside a group paints outside it — the reward
+   tooltips are portaled to <body> (see RewardChip) precisely because the card
+   already clips its own overflow — so the paint containment costs nothing. */
+.loot-tier-group {
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-soft);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
+}
+.loot-tier-group:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
+/* Shiny always renders first (see PoolCard), so it inherits the borderless
+   :first-of-type treatment above like any leading group — nothing sits
+   above it but the card title. A faint amber wash is its only extra
+   treatment, marking it as its own category (the drop everyone's actually
+   scanning the pool for) rather than just another rarity bucket. */
+.loot-shiny-group {
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.06), transparent 75%);
+  margin-left: -4px; margin-right: -4px; padding-left: 4px; padding-right: 4px;
+  border-radius: 8px;
+}
+/* "Aspects" / "Items" — each its own <details> (see PoolCard's
+   RewardSection), collapsible independently of each other and of the card
+   itself, only rendered when a pool actually mixes both. The wrapper only
+   carries spacing; margin-collapsing against whatever precedes it (the
+   card title, or the always-visible shiny group above both sections)
+   already keeps that gap consistent without needing a first-of-type
+   special case. Inside, the first tier group needs no extra top divider of
+   its own for the same reason .loot-tier-group:first-of-type never adds
+   one right under a title — nothing to divide it from, this time within
+   the section's own <details> rather than the card's. */
+.loot-reward-section { margin-top: 18px; }
+/* A tinted banner (background + a thicker, more solid top rule than the
+   hairline .loot-tier-group uses) rather than just another small label, so
+   the two halves read as clearly distinct sections and not one more
+   rarity-tier-style heading in the same list. */
+.loot-reward-section-label {
+  font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--gold); margin-bottom: 10px;
+  padding: 7px 10px; border-radius: 6px;
+  background: rgba(217, 180, 91, 0.12);
+  border-top: 2px solid rgba(217, 180, 91, 0.55);
+}
+.loot-tier-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 8px;
+}
+/* A small glowing bullet in the tier's own color reads as a rarity marker
+   at a glance, the way the game's own tooltip color already does the job —
+   the label text alone felt flat next to the now-richer reward tags. */
+.loot-tier-label::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; flex: none;
+  background: currentColor; box-shadow: 0 0 7px currentColor;
+}
+/* A vertical list of plain rows, not a wrapped grid of tinted chips — only
+   the reward name's text carries the rarity color (see RewardChip's
+   `style`), the row itself stays neutral. Matches how the community
+   reference sites (nori.fish, the-aquarium.com) keep a long, many-tiered
+   reward list scannable: a grid of individually colored/bordered chips is
+   exactly the "too many colours at once" a plain list with colored text
+   avoids. A hairline divider between rows gives the list scan rhythm
+   without needing color to do it. */
+.loot-reward-list { display: flex; flex-direction: column; }
+.loot-reward {
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+  padding: 5px 6px; border-radius: 6px; width: 100%;
+  transition: background-color 0.12s ease;
+}
+.loot-reward:hover { background: rgba(255, 255, 255, 0.05); }
+.loot-reward + .loot-reward { border-top: 1px solid var(--border-soft); }
+/* Guaranteed rewards now show alongside chance-based ones on both tabs (see
+   loot_pools()'s docstring) — right-aligning the badge instead of trailing
+   it right after the name reads as a proper list column instead of just
+   more inline text competing for the same line. */
+.loot-reward .badge.guaranteed { margin-left: auto; }
+.loot-reward-name { line-height: 1.3; }
+/* How many slots in this pool roll the same reward (Wynncraft's own
+   `amount`, e.g. a pool with three Green Ward slots) — a quiet ×N suffix
+   right after the name rather than a separate chip per slot. Explicit
+   neutral grey (not opacity on the inherited rarity color) so it reads as
+   a plain count annotation rather than a dimmer version of the name. */
+.loot-reward-amount { font-weight: 700; color: var(--muted); font-size: 0.92em; }
+/* Which stat a shiny drop is tracking, sourced from a community API
+   (see services.py's _get_shiny_trackers). Forced onto its own line rather
+   than trailing inline after the name — inline, whether it shared the
+   name's line depended on how long the name happened to be (some rewards
+   wrapped, some didn't), which read as inconsistent across the shiny
+   group; a block display keeps every shiny reward's tracker in the same
+   place regardless of name length. */
+.loot-reward-tracker { display: block; font-style: italic; opacity: 0.75; font-size: 0.92em; }
+/* Just a sizing/alignment box now, no background or inset shadow behind
+   the icon itself — the "inventory slot" treatment read as one more boxed
+   element competing with the rest of the (now deliberately flat) row. */
+.loot-reward-icon-slot { display: grid; place-items: center; flex: none; width: 26px; height: 26px; }
+.loot-reward-icon { flex: none; }
+.loot-reward-icon-img { width: 20px; height: 20px; object-fit: contain; }
+.loot-shiny { filter: drop-shadow(0 0 4px rgba(255, 221, 130, 0.85)); }
+.loot-other { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-soft); }
+.loot-other .loot-reward-list { margin-top: 8px; }
+.loot-other summary { border-radius: 7px; padding: 3px 5px; margin: -3px -5px 0; transition: background-color 0.12s ease; }
+.loot-other summary:hover { background: rgba(255, 255, 255, 0.05); }
+
+/* Sits below the title (see PageHead's `below` / LootPools), sharing that
+   row with the countdown. Static, no slide/motion — plain per-button
+   background swap on whichever is .on, the same mechanism .segmented
+   already uses site-wide, not a custom animated indicator. What makes this
+   read as belonging to the page is borrowing the same gold-banner
+   vocabulary the ASPECTS/ITEMS section headers already use (a gold-tinted
+   wash and border) — but plain UI sans-serif, not their serif letterforms:
+   at button size the serif face was blurring into itself and reading as
+   hard to make out, whereas the ASPECTS/ITEMS banners have room to spare. */
+.loot-type-toggle { border-radius: 10px; border-color: rgba(217, 180, 91, 0.35); background: rgba(217, 180, 91, 0.06); }
+.loot-type-toggle button {
+  padding: 12px 26px; font-family: var(--sans); font-size: 14px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.loot-type-toggle button + button { border-left-color: rgba(217, 180, 91, 0.35); }
+/* Same gold-wash/border pairing as .loot-type-toggle right next to it, so
+   the two read as one matched control rather than the countdown being a
+   separate, differently-built object dropped onto the page — the earlier
+   solid panel-gradient fill sat close enough in tone to the page background
+   that it had nothing but its border to read as a distinct shape, which is
+   what still looked "out of place". Plain UI sans-serif for the numbers,
+   same reasoning as the toggle: a decorative face reads slower for exactly
+   the content (numerals, at a glance) where speed matters most. No
+   box-shadow — it read as a floating card dropped onto the header rather
+   than a part of it. margin-left: auto pins it to the far right edge of
+   .page-head-below, the row it now shares with the toggle. */
+.loot-reset-countdown {
+  display: inline-flex; align-items: center; gap: 12px; font-size: 13px;
+  padding: 10px 18px; border-radius: 10px; margin-left: auto;
+  background: rgba(217, 180, 91, 0.06);
+  border: 1px solid rgba(217, 180, 91, 0.35);
+}
+.loot-reset-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; box-shadow: 0 0 6px currentColor; }
+.loot-reset-countdown strong {
+  font-family: var(--sans); font-size: 16px; font-variant-numeric: tabular-nums;
+  padding: 3px 12px; border-radius: 8px; border: 1px solid transparent;
+}
+.loot-reset-far { color: var(--green); }
+.loot-reset-far strong { background: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.35); }
+.loot-reset-soon { color: var(--gold); }
+.loot-reset-soon strong { background: rgba(217, 180, 91, 0.1); border-color: rgba(217, 180, 91, 0.35); }
+.loot-reset-urgent { color: #ff8a6a; }
+.loot-reset-urgent strong { background: rgba(143, 29, 52, 0.16); border-color: rgba(143, 29, 52, 0.45); }
+/* Only the urgent state pulses — it's the one state actually worth glancing
+   back at, so it's the only one that asks for attention. */
+.loot-reset-urgent .loot-reset-dot { animation: loot-pulse 1.4s ease-in-out infinite; }
+@keyframes loot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+/* Aspect rewards with a resolved flavor-text description get a custom
+   hover tooltip (see RewardChip). The help cursor alone only shows up once
+   already hovering — the dotted underline on the name is what makes "this
+   one has more info" obvious at a glance, before the pointer ever gets
+   there, the same convention glossary/definition terms use. */
+.loot-reward-has-tip { cursor: help; }
+.loot-reward-has-tip .loot-reward-name {
+  text-decoration: underline dotted; text-decoration-color: currentColor; text-underline-offset: 3px;
+}
+/* Portal-rendered straight into <body> (see RewardChip) so it floats over
+   the whole page instead of being clipped by .loot-pool-card's own
+   overflow-y: auto. left/top/max-height are set inline, computed in
+   RewardChip's layout effect from the tooltip's real measured size — not a
+   CSS transform, since flipping above/below and staying flush against
+   whichever edge of the chip it's anchored to (the hard rule: never slide
+   back over the chip itself just to fit on screen) needs real dimensions a
+   transform alone can't account for. overflow-y here is what makes that
+   inline max-height (the actual gap above/below the chip, when neither
+   side has room for the full tooltip) scroll instead of clip — though it
+   only ever needs to for the minority of tooltips that don't fully fit in
+   either gap: pointer-events stays off by default (mouse passes straight
+   through to whatever's underneath, exactly as a plain non-interactive
+   tooltip should) and only switches on via .loot-tooltip-scrollable, the
+   class RewardChip adds once it's actually determined this one needs
+   scrolling — see that component's hide-delay comment for why a scrollable
+   tooltip needs to be a real hover target and a non-scrollable one doesn't. */
+.loot-tooltip {
+  position: fixed; pointer-events: none;
+  z-index: 1000; max-width: 340px; max-height: calc(100vh - 20px); overflow-y: auto;
+  padding: 10px 12px; border-radius: 8px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+  font-size: 12.5px; line-height: 1.4; color: var(--text);
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.loot-tooltip-scrollable { pointer-events: auto; }
+/* Same themed scrollbar as .loot-pool-card (Chromium/Safari — Firefox gets
+   the scrollbar-color pair above), so a tooltip that needs to scroll reads
+   as part of the site's own dark UI rather than a bare OS control. */
+.loot-tooltip::-webkit-scrollbar { width: 8px; }
+.loot-tooltip::-webkit-scrollbar-track { background: transparent; }
+.loot-tooltip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.loot-tooltip::-webkit-scrollbar-thumb:hover { background: rgba(217, 180, 91, 0.45); }
+/* One block per stack tier — "Tier 1", "Tier 2", ... in the order
+   nori.fish's own thresholds sort to, each labelled with the copy count
+   that unlocks it, with its own lines (nori.fish's own description array
+   entries, each kept separate — see cache._shape_aspect_description) below
+   rather than run together as one paragraph. */
+.loot-tooltip-tier + .loot-tooltip-tier {
+  margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-soft);
+}
+.loot-tooltip-tier-label { font-weight: 700; color: var(--gold); margin-bottom: 3px; }
+.loot-tooltip-tier-req { font-weight: 400; color: var(--muted); font-size: 0.92em; }
+.loot-tooltip-line + .loot-tooltip-line { margin-top: 3px; }
+
+/* Today's shared raid gambits — one panel above the row, not per-card,
+   since a gambit applies to every raid pool that day rather than one. The
+   gold top edge echoes .loot-pool-card right below it, so this reads as
+   part of the same "loot" card family instead of a bolted-on generic
+   .card — the plain-.card look it had before sat oddly next to the
+   pool cards' gold accent. */
+.loot-gambits-panel { margin-bottom: 16px; border-top: 2px solid rgba(217, 180, 91, 0.35); }
+.loot-gambits-title { margin-bottom: 10px; }
+.loot-gambits-list { display: flex; flex-wrap: wrap; gap: 10px; }
+/* A warm gold-tinted background (rather than a neutral white-on-black
+   chip) and a hover brighten, matching .loot-reward's own hover — these
+   aren't clickable, but the site already uses that same warm-on-hover
+   language for non-interactive emphasis (.loot-shiny-group). */
+.loot-gambit {
+  flex: 1 1 260px; max-width: 420px; display: flex; gap: 10px;
+  padding: 10px 12px; border-radius: 9px;
+  background: rgba(217, 180, 91, 0.05); border: 1px solid var(--border-soft);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.loot-gambit:hover { border-color: rgba(217, 180, 91, 0.3); background: rgba(217, 180, 91, 0.08); }
+/* Diamond glyph — the same inline stroke-icon convention RewardTypeIcon
+   uses for every reward row on this page (see LootPools.jsx), and a nod to
+   the actual in-game/Wynnventory gambit-selection UI, which marks each
+   gambit with a diamond of its own. */
+.loot-gambit-icon { flex: none; margin-top: 2px; color: var(--gold); }
+.loot-gambit-body { min-width: 0; }
+.loot-gambit-name {
+  font-weight: 700; font-size: 13px; color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+}
+.loot-gambit-uncertain {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: 50%; font-size: 10px; font-weight: 700;
+  color: var(--gold); border: 1px solid rgba(217, 180, 91, 0.4); cursor: help;
+}
+.loot-gambit-description { font-size: 12.5px; margin-top: 4px; line-height: 1.4; }
+
+.flag-cell { width: 24px; text-align: center; font-size: 14px; }
+
+.event-card {
+  border-color: rgba(217, 180, 91, 0.5);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(217, 180, 91, 0.12) inset;
+}
+.points-field { display: inline-flex; align-items: center; gap: 6px; }
+.points-input { width: 64px; min-width: 0; text-align: center; padding: 9px 6px; }
+
+/* The XP event's target-level bar (components/EventGoalBar.jsx) and the
+   goal-reached treatment of its card. Orange is progress toward the goal;
+   gold is anything reached, and everything past the goal. */
+
+.event-card.goal-reached {
+  border: 2px solid var(--gold);
+  box-shadow: var(--shadow), 0 0 0 4px rgba(217, 180, 91, 0.12);
+}
+.goal-reached-badge {
+  padding: 3px 10px; border-radius: 999px; background: var(--gold); color: #141413;
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.5px; white-space: nowrap;
+}
+.event-actions {
+  display: flex; justify-content: flex-end; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-top: 14px;
+}
+/* A touch tighter than the site's 9px table rows, so the whole event card —
+   bar, top 10 and footer — fits one desktop screen. */
+.event-card .table td { padding-top: 6px; padding-bottom: 6px; }
+
+/* The banner stretches to fill the first screen (EventBanner sets its
+   min-height), with the footer row pinned to its bottom. */
+.event-card.event-fill { display: flex; flex-direction: column; }
+/* Any height the fill adds lands in the board: a table taller than its
+   content shares the difference evenly across its rows. */
+.event-card.event-fill > .table { flex: 1 1 auto; }
+
+.event-footer {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+}
+.event-footer .event-edit-btn { margin-left: auto; }
+/* Inside the Edit form the destructive action sits apart, on the left. */
+.event-actions .event-cancel-btn { margin-right: auto; }
+
+.event-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 8px 20px; flex-wrap: wrap;
+}
+.goal-summary { text-align: right; }
+.goal-bar { margin: 2px 0 8px; }
+.goal-total { display: flex; align-items: baseline; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.goal-total-value { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.goal-total .muted { font-size: 13px; }
+.goal-gold { color: var(--gold); font-weight: 600; }
+.goal-strong { color: var(--text); font-weight: 600; }
+
+.goal-track-area { position: relative; margin-top: 8px; }
+.goal-pace-edge { color: var(--orange); font-weight: 600; }
+
+/* Markers sit in a band above the track: label, then the diamond touching it. */
+.goal-markers { position: relative; height: 36px; }
+.goal-marker {
+  position: absolute; bottom: 0; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.goal-marker.is-last { transform: translateX(-100%); align-items: flex-end; }
+.goal-marker.is-start { transform: none; align-items: flex-start; }
+.goal-marker.is-start .goal-diamond { margin-left: 1px; }
+.goal-marker-label {
+  font-size: 12.5px; font-weight: 700; white-space: nowrap; color: var(--text);
+}
+.goal-marker.done .goal-marker-label,
+.goal-marker.is-goal .goal-marker-label { color: var(--gold); }
+.goal-diamond {
+  width: 9px; height: 9px; transform: rotate(45deg);
+  border: 1.5px solid var(--muted); margin-bottom: 3px;
+}
+.goal-marker.done .goal-diamond,
+.goal-marker.is-goal .goal-diamond { background: var(--gold); border-color: var(--gold); }
+.goal-badge {
+  width: 20px; height: 20px; border-radius: 50%; background: var(--gold); color: #141413;
+  font-size: 12px; font-weight: 800; line-height: 20px; text-align: center;
+  margin-bottom: -12px; position: relative; z-index: 2;
+  box-shadow: 0 0 0 3px var(--panel);
+}
+
+.goal-track {
+  position: relative; height: 16px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--border);
+}
+/* Positioned by inline left/width along the track. */
+.goal-fill {
+  position: absolute; top: 2px; bottom: 2px; left: 0;
+  border-radius: 6px; background: var(--orange);
+}
+/* The first level's progress from before the event started. */
+.goal-fill.pre { background: rgba(240, 81, 38, 0.35); border-radius: 6px 0 0 6px; }
+.goal-fill.pre + .goal-fill { border-radius: 0 6px 6px 0; }
+.goal-fill.bonus { border-radius: 0 6px 6px 0; background: var(--gold); }
+.goal-pace-line {
+  position: absolute; top: -6px; bottom: -6px; width: 0;
+  border-left: 1.5px dashed var(--text);
+}
+.goal-bonus-zone {
+  position: absolute; right: -4px; top: 30px; height: 28px;
+  border: 1px dashed var(--gold); border-radius: 6px;
+  background: rgba(217, 180, 91, 0.10); pointer-events: none;
+}
+
+.goal-gaps { position: relative; height: 16px; margin-top: 2px; }
+.goal-gap {
+  position: absolute; transform: translateX(-50%); white-space: nowrap;
+  font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.goal-gap.bonus { color: var(--gold); font-weight: 600; }
+/* Pace shares the gap labels' row, pinned right; EventGoalBar's declutter
+   hides any gap label it would overlap. */
+.goal-pace { position: absolute; right: 0; top: 0; white-space: nowrap; font-size: 12px; }
+.goal-start-note {
+  position: absolute; left: 0; top: 1px; white-space: nowrap;
+  font-size: 10.5px; color: var(--muted);
+}
+.goal-pace-text { color: var(--text); }
+
+@media (max-width: 640px) {
+  .goal-gap { display: none; }
+  /* "98 · 43%", "99", "Goal 102": level labels drop their "Lv" on a phone so
+     neighbouring levels all fit. */
+  .goal-lv-word { display: none; }
+  /* Room for the board's three columns on a narrow phone, without the XP
+     column scrolling out of the card. */
+  .event-card { padding: 14px; }
+  .event-card .table th, .event-card .table td { padding-left: 6px; padding-right: 6px; }
+  /* mobile.css makes every table a sideways-scrolling block, which leaves
+     this one short of the card's right edge; it fits at every phone width
+     (see the 380px rule below), so it stays a full-width table. */
+  .event-card .table:not(.stack) { display: table; overflow: visible; }
+  .goal-marker-label { font-size: 11px; }
+  .goal-total-value { font-size: 24px; }
+  .goal-summary { text-align: left; }
+  .goal-total { justify-content: flex-start; }
+}
+
+/* The setup/Edit form's target-level field. */
+.goal-field {
+  display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;
+  padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px;
+  background: rgba(0, 0, 0, 0.15);
+}
+.goal-field-label { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; }
+input.text.goal-level-input {
+  width: 76px; text-align: center; font-weight: 700; border-color: rgba(217, 180, 91, 0.7);
+}
+.goal-field-help { font-size: 13px; }
+.goal-field-help b { color: var(--text); font-weight: 600; }
+.goal-field-note { font-size: 12px; }
+.goal-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.goal-chip {
+  padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border);
+  color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.goal-chip.is-goal { border-color: var(--gold); color: var(--gold); font-weight: 700; }
+
+@media (max-width: 380px) {
+  .event-card .event-unit { display: none; }
+}
+
+.section-head { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
+.section-head h3 {
+  margin: 0; font-size: 15px; font-family: var(--serif); font-variant: small-caps;
+  letter-spacing: 0.5px; font-size: 17px;
+  min-width: 0; overflow-wrap: break-word; word-break: break-word;
+}
+.pill { font-size: 12px; color: var(--muted); }
+.muted { color: var(--muted); }
+/* A one-line descriptor under a toggled-on staff filter (e.g. Up for
+   Removal) — muted like .pill so it doesn't compete with the roster below,
+   but the gold left rule ties it back to the chip that turned it on (see
+   .staff-filter-chip.on) so it still catches the eye as "this changed". */
+.filter-hint {
+  margin: -6px 0 12px; padding-left: 10px;
+  border-left: 2px solid rgba(217, 180, 91, 0.55);
+  font-size: 12.5px; color: var(--muted);
+}
+.center { text-align: center; }
+
+/* ---------- controls ---------- */
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.segmented { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.segmented button {
+  background: transparent; color: var(--muted); border: 0; cursor: pointer;
+  padding: 8px 14px; font-weight: 700; font-size: 13px;
+}
+.segmented button + button { border-left: 1px solid var(--border); }
+.segmented button:hover { color: var(--text); background: var(--bg-2); }
+.segmented button.on { color: #fff; background: linear-gradient(180deg, var(--orange), #c63d18); }
+
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips a, .chips button {
+  color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer;
+  background: transparent;
+  padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px;
+}
+.chips a:hover, .chips button:hover { color: var(--text); border-color: rgba(217, 180, 91, 0.45); text-decoration: none; }
+.chips button.on { color: var(--gold); border-color: rgba(217, 180, 91, 0.6); background: rgba(217, 180, 91, 0.08); }
+
+input.text {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 9px 12px; border-radius: 10px; font-size: 14px; min-width: 220px;
+}
+input.text:focus { outline: none; border-color: rgba(217, 180, 91, 0.5); }
+
+.search-input { position: relative; display: inline-flex; align-items: center; }
+.search-input input.text { padding-right: 30px; }
+.search-clear {
+  position: absolute; right: 6px; background: transparent; border: 0;
+  color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer;
+  padding: 4px 6px; border-radius: 6px;
+}
+.search-clear:hover { color: var(--text); }
+
+.btn {
+  background: linear-gradient(180deg, var(--orange), #c63d18); color: #fff; border: 0;
+  padding: 9px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.danger { background: linear-gradient(180deg, var(--red), var(--red-2)); }
+.btn.success { background: linear-gradient(180deg, var(--green), #1f9d57); }
+
+
+/* The five actions, filling the row: rather than shrinking the buttons to
+   fit a fixed amount of leftover space (which read as cramped and still
+   didn't reliably avoid wrapping), each one grows to claim an equal share
+   of whatever room the row actually has — see .staff-action-btn/
+   .staff-action-item's flex:1 below. Filter chips at the end don't grow
+   (see .staff-filter-chip) — they keep their natural compact size, and the
+   five actions expand into whatever space that leaves them. flex-wrap stays
+   as the safety net at genuinely narrow widths rather than the plan, same
+   "never actually clip/hide content" rule the mobile nav rework followed. */
+.staff-action-row {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+/* The per-action wrapper (divider + button) — grows so its button fills the
+   row's leftover space; min-width:0 lets it actually shrink below its
+   content's natural width under flex-wrap too, instead of forcing a wrap
+   sooner than necessary. */
+.staff-action-item { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; }
+/* Splits the row into two groups without needing every button to carry its
+   own color: "look something up / move someone forward" (View Application,
+   Promote) vs "flag or remove a member" (On Leave, Warn, Offboard). */
+.staff-action-divider { width: 1px; align-self: stretch; min-height: 22px; background: var(--border-soft); }
+
+/* A touch smaller than the site's default .btn (sized for a single
+   standalone call-to-action, more padding than five-in-a-row needs).
+   flex:1 is what actually fills the row: the wrapper above claims an equal
+   share of the row's width, and this — the wrapper's only other flex child
+   besides an optional 1px divider — grows to fill all of that share. */
+.staff-action-btn { padding: 7px 14px; font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; }
+
+/* The armed action's own button — a glow ring rather than a color swap
+   (its .btn/.btn.danger/.btn.success fill already carries meaning) so it
+   reads as "this one is active" without losing which action it is. */
+.staff-action-armed-btn {
+  box-shadow: 0 0 0 2px var(--gold), var(--shadow);
+}
+
+/* Staff-only view filters (Trial Members, Up for Removal): share the
+   actions' row, split off by the same divider — no label needed, since the
+   shape alone marks the shift. Deliberately NOT another .btn — a filled
+   gradient button reads as "click to do something", which is exactly
+   backwards for a toggle that narrows what's already on screen. Pill-shaped
+   and outlined instead, the same visual language the page's own
+   search/region/online toolbar chips use further down (.chips), so "this is
+   a filter" is recognizable at a glance from a control staff already know. */
+.staff-filter-chip {
+  color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer;
+  background: transparent;
+  padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px;
+}
+.staff-filter-chip:hover { color: var(--text); border-color: rgba(217, 180, 91, 0.45); }
+.staff-filter-chip.on { color: var(--gold); border-color: rgba(217, 180, 91, 0.6); background: rgba(217, 180, 91, 0.08); }
+
+/* Fixed toast telling staff an action is armed — see StaffActionBar's
+   ArmedToast comment for why it's anchored to the viewport bottom instead of
+   stacked under the sticky nav, and why its z-index sits above a per-member
+   modal's own (60, set inline in components/Modal.jsx) rather than
+   below it like the sticky nav (10) and every other page-level overlay
+   here — it needs to stay visible and clickable through the whole armed
+   lifetime, modal open or not. */
+.staff-action-toast {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  z-index: 65;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  max-width: calc(100vw - 32px);
+  padding: 10px 14px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid rgba(217, 180, 91, 0.45);
+  border-radius: 999px;
+  box-shadow: var(--shadow), 0 0 0 3px rgba(217, 180, 91, 0.12);
+  color: var(--text);
+  font-size: 13px; font-weight: 600;
+}
+.staff-action-toast.danger { border-color: rgba(143, 29, 52, 0.6); box-shadow: var(--shadow), 0 0 0 3px rgba(143, 29, 52, 0.15); }
+.staff-action-toast-blocked { color: #ff8a6a; font-weight: 600; }
+
+/* On narrow viewports the toast's content used to wrap onto multiple lines,
+   and a 999px pill radius on a wrapped flex box ballooned into a huge oval
+   blob (much larger and louder than the single-line desktop pill) that
+   dominated the screen. Force it back to a single compact row instead: the
+   message text ellipsizes rather than wrapping, "blocked" detail drops
+   entirely (there's no room for a third clause on one line — Cancel already
+   dismisses the action if it's blocked), and Cancel stays a small
+   fixed-width pill rather than the full-size desktop button. */
+@media (max-width: 640px) {
+  .staff-action-toast {
+    left: 8px; right: 8px; transform: none;
+    max-width: none;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 7px 8px 7px 12px;
+    border-radius: 999px;
+    box-shadow: var(--shadow), 0 0 0 2px rgba(217, 180, 91, 0.08);
+    font-size: 12px;
+  }
+  .staff-action-toast.danger { box-shadow: var(--shadow), 0 0 0 2px rgba(143, 29, 52, 0.1); }
+  .staff-action-toast-msg {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+  }
+  .staff-action-toast-blocked { display: none; }
+  .staff-action-toast-cancel {
+    flex: 0 0 auto;
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Picking mode: every clickable member card gets the same gold glow ring as
+   the armed action button itself (not just on hover), so staff can see at a
+   glance, from anywhere on a long scroll, which cards will accept the armed
+   action — hover then brightens the one about to be picked. Toggled on
+   <body> by Members.jsx rather than threaded through MemberCard as a prop,
+   since it's a page-wide mode, not a per-card concern (and doing it this way
+   costs MemberCard's memoisation nothing — see Members.jsx's onSelect
+   comment).
+   Deliberately a flat, unblurred ring (no var(--shadow), unlike the armed
+   button) — that shadow's 30px blur is cheap for the one button it's
+   normally used on, but this rule can apply it to a hundred-plus cards at
+   once on the roster's longest sections, and rasterising that many blurred
+   shadows is exactly the kind of per-frame repaint cost that made the
+   sticky nav drop its own backdrop-filter blur on this same page (see the
+   .nav override below) — scrolling with an action armed was visibly janky
+   until this dropped the blur. */
+body.staff-picking .member-card {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+body.staff-picking .member-card:hover {
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* ---------- states ---------- */
+.spinner {
+  margin: 40px auto; width: 28px; height: 28px;
+  border: 3px solid var(--border); border-top-color: var(--orange);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error {
+  color: #ff8a6a; background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  padding: 12px 14px; border-radius: 10px;
+}
+
+/* ---------- footer ---------- */
+.footer {
+  display: flex; gap: 10px; align-items: center; justify-content: center;
+  flex-wrap: wrap;
+  padding: 22px 18px 30px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--border);
+}
+.footer img { opacity: 0.65; }
+
+/* ---------- mobile ---------- */
+@media (max-width: 680px) {
+  /* Compact two-row nav: brand centred on its own row, every link in one
+     tight row below (sizes chosen so the five public links fit a 320px
+     viewport). */
+  /* env(safe-area-inset-*) is 0 everywhere except a notched/rounded phone,
+     where it is the number of px the browser is telling us are physically
+     unusable. On an iPhone in landscape the left inset is 48px, which is
+     exactly how much of the nav used to sit under the notch. */
+  .nav {
+    padding: 6px calc(10px + env(safe-area-inset-right, 0px)) 6px calc(10px + env(safe-area-inset-left, 0px));
+    gap: 0 3px;
+  }
+  /* The link row used to be two rows tall, and with each row a 44px tap
+     target the nav was the single biggest consumer of a phone screen on the
+     site. It is one row now: the labels shrink with the viewport (clamp on
+     vw) and the padding is down to 5px a side, which fits all five public
+     links on a 320px screen with room to spare. The brand row still gives
+     back what space it can. */
+  .brand { flex: 0 0 100%; justify-content: center; margin-right: 0; }
+  .brand img { height: 22px; }
+  .wordmark { font-size: 16px; }
+  /* nowrap is what actually guarantees the single row; the clamp only makes
+     the common case fit without scrolling. A signed-out visitor also gets
+     "Member Login", which can overflow a narrow phone -- so the link row
+     scrolls sideways rather than wrapping back to two rows and undoing the
+     height saving. The scrollbar is hidden because on a phone it would be a
+     permanent grey bar under the links. */
+  .nav-links {
+    margin-left: 0; flex: 1 1 100%;
+    /* nowrap, not the base rule's wrap: with two children (the scroll
+       wrapper below plus the profile chip) flex line-breaking is decided
+       from their unshrunk content width, so "wrap" would push the chip
+       onto its own second row even though the scroll wrapper is willing
+       to shrink and scroll instead. */
+    flex-wrap: nowrap;
+    justify-content: center;
+    /* Without this, .nav-links (itself a flex item with no overflow set)
+       keeps an auto min-width equal to its content's full size, so it
+       refuses to shrink below the scroll wrapper's unclipped width —
+       which pushes .nav, and the whole page, wider than the viewport
+       instead of letting the wrapper's own overflow-x handle it. */
+    min-width: 0;
+  }
+  /* Only the link list scrolls sideways — the profile chip (and its
+     dropdown) sits outside this wrapper so overflow-y:hidden here can't
+     clip the dropdown when it opens below the chip. */
+  .nav-links-scroll {
+    flex: 1 1 auto;
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .nav-links-scroll::-webkit-scrollbar { display: none; }
+  /* Scroll hint: the only sign the row scrolls, since the scrollbar itself
+     is hidden above. A plain dark-to-transparent fade turned out to be
+     invisible here — it's a dark gradient sitting on an already-dark nav, so
+     there was nothing to see it against. A chevron in the brand orange gives
+     it actual contrast. App.jsx toggles these two classes from real
+     scrollLeft/scrollWidth, so it tracks true position — both arrows
+     mid-scroll, just the trailing one at the start, neither once scrolled to
+     an end or if every link already fits without scrolling at all.
+
+     The arrows live on .nav-links-scroll-wrap, one level up from the
+     scrolling element, not on .nav-links-scroll itself — an absolutely
+     positioned pseudo-element whose containing block is ALSO the scrolling
+     element scrolls away with the rest of the content (its left/right
+     offset is resolved against that box's own scrolled coordinate space),
+     so it only ever lined up with the edge at scrollLeft 0 and vanished the
+     instant the row moved. Anchoring to the non-scrolling wrapper instead
+     keeps it pinned to the visible edge regardless of scroll position.
+     pointer-events:none keeps it from stealing a tap meant for the link
+     underneath. */
+  .nav-links-scroll-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
+  .nav-links-scroll-wrap::before,
+  .nav-links-scroll-wrap::after {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 32px;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    font: 700 20px/1 var(--sans);
+    color: var(--orange-2);
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.85);
+    z-index: 1;
+  }
+  .nav-links-scroll-wrap::before {
+    content: "‹";
+    left: 0;
+    justify-content: flex-start;
+    padding-left: 2px;
+    background: linear-gradient(to right, rgba(10, 13, 20, 0.97) 50%, transparent);
+  }
+  .nav-links-scroll-wrap::after {
+    content: "›";
+    right: 0;
+    justify-content: flex-end;
+    padding-right: 2px;
+    background: linear-gradient(to left, rgba(10, 13, 20, 0.97) 50%, transparent);
+  }
+  .nav-links-scroll-wrap.nav-scroll-fade-left::before { opacity: 1; }
+  .nav-links-scroll-wrap.nav-scroll-fade-right::after { opacity: 1; }
+  .profile-chip-wrap { flex: 0 0 auto; }
+  .nav-links a {
+    padding: 0 5px; font-size: clamp(11px, 3.1vw, 13px);
+    white-space: nowrap; flex: 0 0 auto;
+  }
+
+  /* StaffActionBar on mobile: labels stay on (icon-only was unreadable — a
+     wall of same-sized colour squares with no text to tell them apart), and
+     the row wraps rather than scrolling or clipping. Sized deliberately
+     tight — smaller than the desktop compact size — so the five actions
+     plus the two filter chips land in two rows instead of three: roughly
+     Application/Promote/On Leave/Warn on the first, Offboard/Pages/Removals
+     on the second, though the exact split shifts with the live Removals
+     count's digit width. Drops the desktop row's flex:1 fill
+     (.staff-action-item/.staff-action-btn) back to natural, label-sized
+     width — evenly stretching buttons to fill leftover width is a wide-row
+     problem; on a phone each one should just be as wide as its own label. */
+  .staff-action-row { gap: 5px; }
+  .staff-action-item { flex: 0 0 auto; gap: 4px; }
+  .staff-action-btn, .staff-filter-chip { padding: 4px 7px; font-size: 11px; flex: 0 0 auto; }
+
+  .container {
+    padding: 20px calc(14px + env(safe-area-inset-right, 0px))
+             calc(48px + env(safe-area-inset-bottom, 0px))
+             calc(14px + env(safe-area-inset-left, 0px));
+  }
+  /* 44px wraps "Kingdom of Foxes" onto two lines below ~430px; 8.5vw keeps
+     it on one (32px fits a 375px viewport with margin to spare). */
+  .hero-title { font-size: clamp(26px, 8.5vw, 44px); }
+  .hero-crest { height: 120px; }
+  /* Sticky nav here is a brand row plus one 44px link row, ~83px, not the
+     desktop ~55px -- an anchor jump that ignores it lands the heading under
+     the nav. Measured, not guessed; re-measure if the nav rows change. */
+  .toolbar .search-input { flex: 1 1 100%; min-width: 0; }
+  .toolbar input.text { min-width: 0; width: 100%; }
+  .segmented { flex-wrap: wrap; }
+
+  .territory-map-fullscreen { min-height: 340px; }
+  /* NB: .territory-map-viewport must never take a border. Its
+     position:absolute children (.territory-map-camera, the label layer) are
+     laid out from its padding box, while TerritoryMap.jsx measures pointer
+     positions against its border box, and those two origins differ by
+     exactly the border width. An 8px padding used to sit here; padding turns
+     out NOT to shift that origin (it lives inside the padding box), so it was
+     never the cause of the pinch drift it was blamed for — that was the pinch
+     anchoring itself. It is still gone, because it shrank the map for no
+     reason. A border would genuinely skew the pointer maths; viewportInsetRef
+     compensates for one, but not having one is simpler. */
+  /* The markers' 4px corner radius on touch now comes from markerRadius in
+     TerritoryMap.jsx, since they are canvas rects rather than elements. */
+
+  /* The detail card was a 360px pane pinned to the map's top-right corner.
+     At 390px wide that is the whole screen minus 30px, laid over the part of
+     the map the user just tapped — so selecting a territory hid the thing
+     you selected. As a bottom sheet it covers the half of the map furthest
+     from the thumb, sitting above both the control row and
+     .territory-map-res-tick's own row stacked above that, so none of the
+     three ever fight over the same strip of screen and the map controls
+     stay reachable with the sheet open. Deliberately the same 96px the
+     desktop/wide-touch .territory-panel backs off (see its comment) rather
+     than a separate, smaller number tuned tighter to this row's own
+     control-row height: an earlier, tighter value here (92px) left only a
+     2px margin against .territory-map-res-tick in practice, which text
+     metrics alone can eat — 96px keeps a real 4px+ margin everywhere (see
+     that element's own comment) instead of shaving this one context's
+     already-thin clearance even further. */
+  .territory-panel {
+    top: auto;
+    left: calc(10px + env(safe-area-inset-left, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: none;
+    /* Measured: at 52dvh the sheet left only ~180px of map visible above it
+       on a 390x844 phone, which is not enough to keep your bearings. 46dvh
+       leaves ~320px, and the panel scrolls internally anyway, so the cost is
+       a shorter scroll rather than lost content. */
+    max-height: min(46vh, calc(100% - 150px));
+    max-height: min(46dvh, calc(100% - 150px));
+    padding-bottom: 14px;
+    /* A bottom-anchored sheet reads as attached to the bottom edge, so the
+       top corners are the ones that need rounding off. */
+    border-radius: 16px 16px 12px 12px;
+    /* Rubber-banding at the end of the sheet's own scroll used to chain into
+       the page behind it. */
+    overscroll-behavior: contain;
+  }
+  /* The sheet is wider than the desktop card, so the header can use the room
+     the (now much larger) close button needs. */
+  .territory-panel-head { padding-right: 46px; }
+
+  /* Both this and .territory-panel end up bottom-anchored above the control
+     row, and .territory-panel carries z-index 25 — without this, opening a
+     settings popup while a territory was selected painted it *behind* the
+     detail sheet, i.e. the popup appeared not to open at all. A popup is an
+     explicit, transient action, so it wins. */
+  .territory-map-settings-panel { z-index: 30; }
+
+  /* Each popup is anchored right:0 inside its own 60px toggle, and the
+     toggles sit in a right-aligned row of four — so the leftmost toggle's
+     300px-wide popup started ~126px off the left edge of a 390px phone
+     (196px off a 320px one), i.e. most of the guild search and leaderboard
+     panels were simply unreachable. On a phone, anchor them to the viewport
+     instead of to their button. */
+  .territory-map-settings-panel {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    /* --map-keyboard-inset is however much of the screen the software
+       keyboard is covering (0 when it is closed); see TerritoryMapView. */
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px) + var(--map-keyboard-inset, 0px));
+    min-width: 0;
+    max-width: none;
+    width: auto;
+  }
+  .territory-map-guild-panel { min-width: 0; }
+  .territory-map-settings-panel-scroll {
+    /* The desktop cap is min(320px, 100vh - 220px), which on a 390px-tall
+       landscape phone collapses to ~170px — about five rows. Measure against
+       the popup's own offset from the top of the screen instead. */
+    max-height: min(46vh, calc(100vh - 190px));
+    max-height: min(46vh, calc(100dvh - 190px));
+  }
+
+  /* Wide tables (roster/ranks — opt in via the extra "stack" class) collapse
+     into stacked per-row cards: the lead cell (.stack-head) becomes a
+     heading, data-label cells a two-up facts grid with the label engraved
+     above each value, and .stack-wide cells span the full row. */
+  .table.stack, .table.stack tbody { display: block; }
+  .table.stack colgroup, .table.stack thead, .table.stack .stack-hide { display: none; }
+  /* Grid, not flex-wrap: the gutter between the two columns has to come from
+     the container. Doing it per-cell means guessing which cells land in the
+     right-hand column, and .stack-head carries order:-1, so DOM parity and
+     visual position disagree the moment a table has one. */
+  .table.stack tr {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 9px 14px;
+    padding: 12px 2px; border-bottom: 1px solid var(--border-soft);
+  }
+  .table.stack tr:last-child { border-bottom: 0; }
+  .table.stack tr:hover td { background: transparent; }
+  .table.stack td {
+    min-width: 0; border: 0; padding: 0;
+    white-space: normal; overflow: visible; text-overflow: clip;
+    /* .val right-aligns numbers so they tabulate down a desktop column. There
+       is no column here — each cell is half a row — so right-alignment just
+       shoves every second value into the middle of the card and strands the
+       label above it on the far side. Aligning every stacked cell to its own
+       edge is what makes the label/value pairs read as a grid. */
+    text-align: left;
+  }
+  .table.stack td[data-label]::before {
+    content: attr(data-label);
+    display: block; color: var(--muted); font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .table.stack .stack-head { grid-column: 1 / -1; order: -1; font-size: 15px; }
+  .table.stack .stack-wide { grid-column: 1 / -1; }
+
+  /* Leaderboard row: the rank sits in a fixed gutter beside the player's
+     name (it was a labelled "RANK" fact of its own, which spent a whole
+     column on a medal), and Raids/XP/Wars read as one 3-up line under the
+     name. The per-raid split would add a cell per raid to every card, so only
+     the raid the board is sorted by (if any) is shown — as a 4th column.
+     The sorted value is tinted, since the header row that says what the
+     board is sorted by is hidden here; the toolbar's picker replaces it. */
+  .leaderboard-table.stack tr {
+    position: relative;
+    grid-template-columns: repeat(3, 1fr); gap: 8px 8px;
+    padding: 12px 2px 12px 44px;
+  }
+  .leaderboard-table.stack.raid-sorted tr { grid-template-columns: repeat(4, 1fr); }
+  .leaderboard-table.stack td.rank {
+    position: absolute; left: 0; top: 12px; width: 38px;
+    text-align: center; font-size: 15px; line-height: 22px;
+  }
+  .leaderboard-table.stack td.rank::before { content: none; }
+  .leaderboard-table.stack .raid-col { display: none; }
+  .leaderboard-table.stack .raid-col.sorted { display: block; }
+  .leaderboard-table.stack td.val { font-size: 15px; font-variant-numeric: tabular-nums; }
+  .leaderboard-table.stack td.val:not(.muted) { color: var(--text); }
+  .leaderboard-table.stack td.sorted,
+  .leaderboard-table.stack td.sorted::before { color: var(--orange-2); }
+  .leaderboard-table.stack .lb-row:active { background: var(--bg-2); }
+
+  /* Leaderboard toolbar, top to bottom: search, the period switch at full
+     width (three equal buttons rather than one that wraps under the others),
+     the sort picker, then the online filter with the count beside it. */
+  .lb-toolbar .segmented { flex: 1 1 100%; flex-wrap: nowrap; }
+  .lb-toolbar .segmented button { flex: 1 1 0; padding-left: 6px; padding-right: 6px; }
+  .lb-mobile-sort { display: flex; flex: 1 1 100%; min-width: 0; }
+  .lb-sort-select { flex-basis: 0; }
+  .lb-sort-select, .lb-sort-dir { min-height: 44px; }
+  /* 16px: iOS zooms the page on focusing a select under that, like inputs. */
+  .lb-sort-select { font-size: 16px; }
+  .lb-toolbar .pill { margin-left: auto; }
+
+  /* Tables that have not opted into the stacked-card treatment above (the
+     admin/diagnostic grids, and the narrow ones that genuinely fit) still
+     have to not blow out the page: display:block turns the table itself into
+     the scroll container, so a wide one scrolls sideways inside the card it
+     lives in instead of pushing the whole document 200px wide. */
+  .table:not(.stack) {
+    display: block;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  /* Cards get narrower rather than dropping to one per row — two up still
+     reads fine at 375px and halves the scrolling. */
+  .member-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  /* At ~170px card width the desktop layout — status badge pinned to the
+     top-right corner, name row padded to clear it — left the name almost no
+     room, truncating it to a single letter. Drop the corner reserve on
+     mobile so the name gets the card's full width, and put the status badge
+     (still the same absolutely-positioned element on desktop — position:
+     absolute doesn't care where in the DOM it lives) on the guild-rank
+     line instead, where there's room to spare. The rank text shrinks with
+     an ellipsis rather than ever pushing the badge or wrapping onto the
+     region/meta line below it. */
+  .member-card { padding: 10px; }
+  .member-card-open { padding-right: 0; }
+  .member-card-title-row { display: flex; align-items: baseline; gap: 6px; }
+  .member-card-title { flex: 1 1 auto; min-width: 0; }
+  .member-card-status { position: static; max-width: none; flex: 0 0 auto; text-align: right; }
+  /* Side-by-side columns don't fit a phone width — stack pending above
+     complete instead, each still its own full-width .member-grid. */
+  .class-split { grid-template-columns: 1fr; gap: 16px; }
+  .class-split-col + .class-split-col { border-left: 0; padding-left: 0; border-top: 1px solid var(--border-soft); padding-top: 16px; }
+  .stat-tiles { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+  /* The stacked leaderboard row puts the player on their own line, so the
+     bar fill (absolutely positioned against the desktop cell) has nothing
+     sensible to size against. Every other cell falls through to the shared
+     two-up .table.stack layout, which is the right shape here. */
+  .table.stack .name-cell .bar { display: none; }
+
+  .footer {
+    padding: 22px calc(18px + env(safe-area-inset-right, 0px))
+             calc(30px + env(safe-area-inset-bottom, 0px))
+             calc(18px + env(safe-area-inset-left, 0px));
+  }
+
+  /* .loot-pool-card's max-height (theme.css, "Height tracks the viewport"
+     comment) is tuned against the desktop nav's ~55px and a single-row
+     toolbar. Mobile's nav runs ~83px (two rows, see the sticky-nav comment
+     above) and the Raid/Lootrun toggle + countdown toolbar wraps taller
+     too, so that same fixed subtraction leaves too
+     little of the sum accounted for — the card claims more of the viewport
+     than is actually left, and the footer ends up crowded or clipped below
+     it. Rather than chase an exact mobile constant, let the card grow with
+     its content and the page scroll normally instead — mobile users scroll
+     pages routinely, so there's no real need to fit everything above the
+     fold the way the desktop layout does. */
+  .loot-pool-card { max-height: none; overflow-y: visible; }
+}
+
+/* Staff-action modals (components/staff/). Lives here rather than in the
+   component's inline style because a React style object holds exactly one
+   value per property, and dvh needs a vh line under it for iOS below 15.4. */
+.modal-card {
+  max-width: 560px;
+  width: 100%;
+  max-height: 85vh;
+  max-height: 85dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: var(--shadow);
+}
+.modal-card .section-head { justify-content: space-between; }
+
+/* ---------- touch ----------
+   Keyed on (pointer: coarse) rather than a width, because the two are not the
+   same question. A 500px-wide desktop window is still a mouse and wants the
+   dense layout; a phone rotated into landscape is 844px wide and still has a
+   fingertip, no hover, and no scroll wheel. Everything below is either a hit
+   area or a hover-only affordance, so it belongs to the input device.
+   Nothing in here matches on a mouse, which is what keeps the desktop
+   rendering byte-identical to before. */
+@media (pointer: coarse) {
+  /* One button now, not four — so it can be smaller without becoming a
+     cramped target, and it leaves the map itself that much less obstructed.
+     46px (down from 52px) frees a bit more of the strip above the row for
+     .territory-map-res-tick, still comfortably above the ~44px minimum
+     touch target. */
+  .territory-map-settings-toggle { width: 46px; height: 46px; font-size: 30px; }
+  .territory-map-settings-toggle-icon { width: 22px; height: 22px; }
+
+  /* Touch keeps the smaller, previously-verified-safe size rather than
+     inheriting the bigger desktop/mouse one above: this control row is 2px
+     taller than the mouse-only 44px one that size was tuned against, and a
+     touch device is also where the mobile bottom-sheet .territory-panel
+     shows up, whose own clearance this same math has to clear too. bottom:
+     66px + a 26px-tall row (line-height 16px + 4px padding each side + 1px
+     border each side) keeps the real ≥4px margins confirmed against both
+     the 46px control row and .territory-panel's 96px cutoff. */
+  .territory-map-res-tick {
+    bottom: 66px;
+    padding: 4px 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  /* backdrop-filter is the most expensive property on the page once the
+     browser is rasterizing in software: it reads back and gaussian-blurs
+     everything behind the element on every frame the content behind it
+     changes. Both of these sit over content that moves constantly — .nav is
+     sticky over every scrolling list on the site, and .territory-panel is a
+     full-width bottom sheet laid over the map, so it re-blurs on every frame
+     of a pan while a territory is selected, which on touch is the normal
+     state. Opaque backgrounds instead; the panel was already at 0.96 alpha, so
+     its blur was buying almost nothing to begin with. Fine-pointer devices
+     keep the frosted look. */
+  .nav {
+    background: #0a0d14;
+    backdrop-filter: none;
+  }
+  .territory-panel {
+    background: #0a101a;
+    backdrop-filter: none;
+  }
+
+  /* iOS Safari zooms the page in whenever a focused input's text is under
+     16px, and does not zoom back out on blur — so typing in any of the search
+     boxes (all 13-14px) left the site stuck at ~1.3x with the nav cropped.
+     16px is the documented threshold, not a preference. */
+  /* input.text has to be named explicitly: a media query adds no specificity,
+     so the site's own `input.text { font-size: 14px }` (0,1,1) outranked a
+     bare `input` (0,0,1) in here and every search box stayed at 14px. Same
+     specificity now, and this block is last in the file. */
+  /* .territory-map-guild-search is the same trap one class further along: at
+     (0,1,0) it outranked the bare `input` here and stayed at 13px, so tapping
+     the guild search in the map's control sheet force-zoomed the page — and
+     because the sheet is bottom-anchored, the zoom left the map unusable
+     rather than merely scaled. Any new input with its own class needs adding
+     here too. */
+  input, select, textarea,
+  input.text,
+  .territory-map-guild-search,
+  .points-input { font-size: 16px; }
+  /* 220px + 16px text overflows a 375px screen once the toolbar's gap and the
+     container padding are taken out; it only ever needed to be wide enough to
+     read a name. */
+  input.text { min-width: 0; }
+
+  /* The grey flash Chrome/Safari paint over a tapped element is drawn on the
+     element's own box, so it ignored every rounded corner on the site and
+     flashed a hard rectangle. Each of these already has its own :active or
+     .on state to acknowledge the tap. */
+  a, button, summary, [role="button"], input, select, label {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ---- hit areas ----
+     WCAG 2.5.5 and the Apple HIG both put the floor at 44px; measured before
+     this, the nav links were 30px tall, the filter chips 26px, the segmented
+     buttons 31px and the rank-guide toggle 21px. Only min-height is set (with
+     flex centring to keep the label optically centred), so every one of these
+     grows downward and none of them gets wider — which matters because the
+     mobile nav packs its links into a single non-wrapping row, and any extra
+     width would push the last of them off the edge into a sideways scroll. */
+  .nav-links a,
+  .chips a,
+  .chips button,
+  .segmented button,
+  .rank-guide-toggle,
+  .profile-chip,
+  .btn,
+  .footer a,
+  .week-calendar-cell.selectable {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+  /* Left-aligned rather than centred: this one is a whole card row (the
+     member name and avatar), not a pill. */
+  .member-card-open { min-height: 44px; }
+
+  /* .brand is deliberately absent from the lists above. It is a 26-34px tall
+     link to Home sitting directly above a "Home" nav link that is now a full
+     44px — WCAG 2.5.5's "equivalent control on the same page" exception. The
+     alternative, a 44px brand row, adds 20px to a sticky nav that is already
+     the tallest thing on a phone screen, for a target the user has no reason
+     to reach for. Same reasoning, differently: .territory-marker cannot be
+     44px because it is map geometry at map scale — the zoom controls,
+     double-tap and pinch exist to make small ones reachable instead. */
+  /* 6px of gap between two 44px targets is inside the margin of error for a
+     fingertip; 8px is the smallest separation that reliably reads as two. */
+  .chips { gap: 8px; }
+  .profile-dropdown button,
+  .profile-dropdown a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Small icon buttons that sit inside dense rows and genuinely cannot grow
+     to 44px without wrecking the row they live in. The transparent ::before
+     extends the *hit* area to 44px in both axes while the painted button
+     keeps its size, so the layout is untouched. The insets are deliberately
+     asymmetric where a neighbour is close: two overlapping hit areas send the
+     tap to whichever is later in paint order, which is worse than a small
+     target because it is wrong rather than merely fiddly. */
+  /* Column-sort and row-expand affordances live inside table cells: growing
+     them would grow every row. Vertical-only hit expansion instead — the
+     cells above and below are the same control's own padding, but the cells
+     left and right are a *different* column's sort button, so the horizontal
+     expansion stays small enough that two never overlap. */
+  .sort-th,
+  .raid-expand {
+    position: relative;
+  }
+  /* .table th carries `padding: 8px 10px`, so there are exactly 20px of dead
+     space between one column's sort button and the next one's. Taking 10px
+     per side uses all of it and leaves the two hit boxes touching but never
+     overlapping — 23x19 painted becomes 43x45 hit, up from 23x19. */
+  .sort-th::before {
+    content: "";
+    position: absolute;
+    inset: -13px -10px;
+  }
+  /* The row-expand chevron sits alone in its cell with no horizontal
+     neighbour, so it can have the full 44px in both directions. */
+  .raid-expand::before {
+    content: "";
+    position: absolute;
+    inset: -16px -15px;
+  }
+
+  .roster-head-button {
+    position: relative;
+  }
+  .roster-head-button::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* The pin and the remove sit 6px apart inside one chip, so they are the one
+     place a 44px-wide hit box each would actively misfire: the two boxes
+     would overlap by 20px and half of "pin" would remove the guild instead.
+     Widen the buttons to 28px and the gap to 8px -- centres 36px apart -- and
+     then take the hit area to a full 44px vertically but only to the halfway
+     line horizontally, so the boxes meet and never cross. */
+  .territory-map-guild-chip { gap: 8px; }
+  .territory-map-guild-chip-remove {
+    width: 28px;
+    height: 28px;
+    position: relative;
+  }
+  .territory-map-guild-chip-remove::before {
+    content: "";
+    position: absolute;
+    inset: -8px -4px;
+  }
+
+  /* The "add this guild" plus only faded in on :hover, an event a touchscreen
+     never sends — so on a phone the search results looked like plain,
+     unactionable rows. (The row itself was tappable, but nothing said so.) */
+  .territory-map-guild-result-add {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Sixteen 20px steppers, in pairs, in a two-column grid. Growing the button
+     itself to 44px would nearly double the height of the whole simulator
+     panel, so it grows to 34px and borrows the remaining 10px from the
+     ::before above. -5px keeps the hit box clear of the 8px row gap. */
+  .territory-sim-step-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+    position: relative;
+  }
+  .territory-sim-step-btn::before {
+    content: "";
+    position: absolute;
+    inset: -5px;
+  }
+
+  /* 24px, in the corner of a panel, next to the panel's own scroll area —
+     the single hardest thing on the page to hit, and the only way to dismiss
+     the detail view other than finding empty map to tap. */
+  .territory-panel-close {
+    top: 4px;
+    right: 4px;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  /* Panels that scroll internally: stop a flick that reaches the end of the
+     list from continuing into the page (or, on the map, into the browser's
+     own pull-to-refresh) behind it. */
+  .territory-panel,
+  .territory-map-settings-panel-scroll,
+  .row-menu,
+  .profile-dropdown {
+    overscroll-behavior: contain;
+  }
+}
+
+/* ---------- landscape phone ----------
+   A phone on its side is ~390px tall but ~844px wide, so it misses the 680px
+   mobile block entirely and gets the full desktop map chrome inside a third
+   of the height. Height, not width, is the constraint here. */
+@media (max-height: 540px) and (pointer: coarse) {
+  /* Already small against a 390px-tall map, but the sheet it opens needs
+     every row it can get here. */
+  .territory-map-settings-toggle { width: 42px; height: 42px; }
+
+  /* calc(100% - 24px) of a 335px-tall map is 311px, and the panel is pinned
+     top-right while the controls are pinned bottom-right — so a long panel
+     grew straight down over all four of them. Leave the bottom 82px clear. */
+  /* Pinned left rather than right. In landscape the detail card keeps the
+     desktop's top-anchored shape (there is no room for a bottom sheet under
+     a 390px-tall screen), and the right edge is already carrying the zoom
+     stack at the top and the control row at the bottom — a top-right card
+     sat on top of the zoom buttons. Left is empty in this layout. */
+  .territory-panel {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    right: auto;
+    width: 320px;
+    max-height: calc(100% - 94px);
+  }
+  /* Each popup opens upward from `bottom: 100% + 8px` of its toggle, so its
+     height is measured from ~80px above the map's bottom edge. Against a
+     390px-tall screen every one of the four ran off the top -- measured at
+     -320px to +80px, i.e. entirely or mostly unreachable. Anchoring to the
+     viewport instead of to the button gives them the whole screen height to
+     work with, and the toggles are 42px here so 54px clears them. */
+  .territory-map-settings-panel {
+    position: fixed;
+    top: auto;
+    left: auto;
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    bottom: calc(54px + env(safe-area-inset-bottom, 0px) + var(--map-keyboard-inset, 0px));
+    max-height: calc(100vh - 74px);
+    max-height: calc(100dvh - 74px);
+    z-index: 30;
+  }
+  /* The desktop cap is min(320px, 100vh - 220px), which at 390px tall
+     resolves to 170px -- about five rows of a leaderboard. This leaves room
+     for the popup's own tabs and padding inside the cap above. */
+  .territory-map-settings-panel-scroll {
+    max-height: calc(100vh - 150px);
+    max-height: calc(100dvh - 150px);
+  }
+  .territory-map-fullscreen { min-height: 300px; }
+}
+
+/* The ?perf=1 readout (MapPerfOverlay in TerritoryMap.jsx). Deliberately
+   plain and out of the way: it is a measuring instrument, not part of the
+   map, and it must not cost a repaint of anything under it — hence its own
+   layer and no backdrop filter. */
+.territory-map-perf {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 30;
+  padding: 6px 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(8, 16, 24, 0.9);
+  color: #cbd5e1;
+  font: 11px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+  pointer-events: none;
+  contain: layout paint;
+}
+
+/* backdrop-filter, on the pages whose content moves under it.
+ *
+ * The touch block above already turns both of these off, for a reason that
+ * turns out not to be about touch at all: the filter re-reads and re-blurs
+ * everything behind the element on every frame its backdrop changes, and on
+ * the war map that is every frame of a pan. .nav is sticky above the map and
+ * .territory-panel is laid over it, so a drag re-blurs both continuously.
+ * Fine-pointer devices were left with the frosted look because the cost was
+ * assumed to be a software-rasterization problem; it is not. Firefox pays it
+ * with hardware acceleration on, and it is charged outside the canvas — which
+ * is why hiding the tiles, the routes, the labels, or the entire canvas made
+ * no difference to it.
+ *
+ * The war map was the first page to hit this, but nothing about it is special:
+ * "content moves under the sticky nav" is just as true of a long scroll as of
+ * a pan. Members (a hundred-plus cards), Leaderboard (a hundred-plus rows) and
+ * Lootpools (several hundred reward rows) are the site's three long pages, and
+ * on all three the whole document slides under .nav for the entire length of a
+ * scroll — so every scroll frame re-blurs the strip, which is what makes those
+ * three feel heavy on a software rasterizer and in Firefox specifically.
+ *
+ * Still scoped rather than removed site-wide: the short pages (Home, Login,
+ * Privacy, the admin screens) barely scroll, so they pay it once and keep the
+ * frosted look on a mouse.
+ */
+body.war-map-page .nav,
+body.members-page .nav,
+body.leaderboard-page .nav,
+body.loot-pools-page .nav {
+  background: #0a0d14;
+  backdrop-filter: none;
+}
+body.war-map-page .territory-panel {
+  background: #0a101a;
+  backdrop-filter: none;
+}
+
+/* ---------- Uniform page ---------- */
+.uniform-layout {
+  display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: 18px; align-items: start;
+}
+.uniform-config { display: flex; flex-direction: column; gap: 16px; }
+.uniform-field { display: flex; flex-direction: column; gap: 7px; }
+.uniform-field-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.9px; color: var(--muted);
+}
+.uniform-field-hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
+.uniform-field .segmented { align-self: start; flex-wrap: wrap; }
+/* .text (controls.css) is scoped to input.text, so a <select> needs its own
+   copy of the same look. Leaving `appearance` untouched (like .lb-sort-select
+   in leaderboard.css does) still leaves the native dropdown *arrow* under the
+   browser/OS's own control — on this control that native arrow visibly
+   flashes to its own default (light) hover/open style, clashing with the
+   dark custom box around it. appearance: none removes that native arrow
+   entirely; the chevron below is a plain SVG drawn in the same muted grey
+   every other icon on the site uses, so it never has its own hover state to
+   clash with. */
+.uniform-field select.text {
+  width: 100%;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 6px 30px 6px 10px; border-radius: 8px; font-size: 13px; font: inherit;
+  cursor: pointer; appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2398a1b5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+/* Same treatment as input.text:focus (controls.css) — a border highlight,
+   not a ring — rather than the browser's own default focus outline, which
+   on this dark box renders as a stray pale/white rectangle. */
+.uniform-field select.text:focus {
+  outline: none; border-color: rgba(217, 180, 91, 0.5);
+}
+/* A medal position locked because its predecessor is still "No Medal" (see
+   PositionPicker) — dimmed and inert rather than just unlabeled, so the
+   ordering rule reads as the control's own state, not a stray bug. */
+.uniform-field select.text:disabled {
+  opacity: 0.45; cursor: not-allowed;
+}
+
+/* Heading for the "choose which medal goes where" block (see Uniform.jsx's
+   PositionPicker) — sits in the same config card as Username/Season/Model,
+   right above the Preview button, so the same top-border divider
+   .uniform-prompt already uses marks it as its own sub-section rather than
+   one more plain field. The medal selects right after this are plain
+   .uniform-fields, so they already match the rest of the card's
+   spacing/typography with no extra rules needed. */
+.uniform-medal-positions-intro {
+  padding-top: 14px; border-top: 1px solid var(--border-soft);
+}
+
+.uniform-go { display: block; width: 100%; margin-top: 2px; }
+.uniform-prompt {
+  margin: 2px 0 0; padding-top: 14px; border-top: 1px solid var(--border-soft);
+  color: var(--muted); font-size: 13px; line-height: 1.5;
+}
+.uniform-error { margin-top: 4px; }
+
+/* Right card: the 3D preview and everything about the result live together. */
+.uniform-stage {
+  min-height: 420px;
+  display: flex; align-items: center; justify-content: center;
+  /* Same panel gradient every .card uses, plus a faint gold spotlight where
+     the model stands, so the 3D view reads as part of the panel. */
+  background:
+    radial-gradient(58% 55% at 50% 40%, rgba(217, 180, 91, 0.07), transparent 78%),
+    linear-gradient(180deg, var(--panel), #0d1119);
+}
+.uniform-result {
+  display: flex; flex-direction: column; align-items: center;
+  width: 100%; max-width: 340px;
+}
+.uniform-rule { width: 100%; margin-top: 14px; }
+
+.uniform-facts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px;
+  width: 100%; margin: 12px 0 16px;
+}
+.uniform-facts dd { margin: 0; }
+.uniform-fact-label {
+  color: var(--muted); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;
+}
+.uniform-fact-value { font-size: 14px; font-weight: 600; }
+.uniform-fact-note { color: var(--muted); font-weight: 400; font-size: 12px; }
+.uniform-medals { display: inline-flex; gap: 5px; flex-wrap: wrap; }
+/* Colour (border/bg/text) is set inline per medal — its Discord role colour. */
+.badge.medal { border: 1px solid transparent; }
+
+.uniform-download { display: block; width: 100%; text-align: center; text-decoration: none; }
+.uniform-download:hover { text-decoration: none; }
+
+.uniform-stage-empty { text-align: center; color: var(--muted); }
+.uniform-stage-empty-title {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 0.5px;
+  font-size: 18px; color: var(--text); margin-bottom: 4px;
+}
+.uniform-stage-empty p { margin: 0; font-size: 13px; }
+
+.skin-viewer { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+/* Transparent — the .uniform-stage gradient behind it is the backdrop, so the
+   model floats directly on the panel with no seam. */
+.skin-viewer-canvas { max-width: 100%; background: transparent; cursor: grab; }
+.skin-viewer-canvas:active { cursor: grabbing; }
+.skin-viewer-hint { font-size: 11px; margin: 0; color: var(--muted); }
+
+@media (max-width: 780px) {
+  .uniform-layout { grid-template-columns: 1fr; }
+  .uniform-stage { min-height: 0; padding-top: 24px; padding-bottom: 24px; }
+}
+
+

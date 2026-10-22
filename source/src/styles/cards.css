@@ -1,0 +1,70 @@
+/* ---------- cards / grid ---------- */
+.card {
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+.card-title {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 0.5px;
+  font-size: 19px; font-weight: 700; margin-bottom: 6px;
+}
+
+/* ---------- site-admin Users page ---------- */
+/* Counts above the table: how many accounts can sign in, how many were here
+   this week, and the split by tier. auto-fit rather than a fixed column count
+   so the row collapses to two-up on a phone without a media query. */
+.admin-user-summary {
+  display: grid; gap: 10px; margin-bottom: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+.admin-user-stat {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+}
+.admin-user-stat-label {
+  color: var(--muted); font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.admin-user-stat-value { font-size: 24px; font-weight: 700; margin-top: 3px; }
+.admin-user-stat-value.tone-green { color: var(--green); }
+.admin-user-stat-value.tone-gold { color: var(--gold); }
+.admin-user-stat-value.tone-teal { color: var(--teal); }
+
+/* Avatar, name and any badges on one baseline; the gap replaces the
+   margin-left each badge would otherwise need for itself. */
+.admin-user-name { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.admin-user-actions { text-align: right; white-space: nowrap; }
+/* Smaller than the site's default .btn, which is sized for a standalone
+   call-to-action rather than a pair of controls repeated down every row. */
+.admin-user-btn { padding: 5px 12px; font-size: 12px; margin-left: 6px; }
+/* Sign out is the milder of the two, so it reads as an outline rather than
+   competing with Revoke's filled danger button. */
+.admin-user-btn:not(.danger):not(.success) {
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+}
+.admin-user-btn:not(.danger):not(.success):hover {
+  color: var(--text); border-color: rgba(217, 180, 91, 0.45);
+}
+.admin-user-error {
+  color: var(--red-text); font-size: 12px; margin-top: 4px; white-space: normal;
+}
+
+.admin-user-pin {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: flex-end;
+  margin-top: 6px; white-space: normal; font-size: 12px;
+}
+.admin-user-pin .muted { flex-basis: 100%; text-align: right; }
+
+/* Users page: link exceptions */
+.link-exc-sub { margin: -2px 0 14px; font-size: 13px; }
+.link-exc-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.link-exc-form input.text { flex: 1 1 200px; min-width: 0; }
+.link-exc-flagged { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; font-size: 13px; }
+.link-exc-id { font-size: 12px; }
+.link-exc-scroll { overflow-x: auto; }
+.revoked-list { margin-top: 14px; }
+.revoked-list > summary { cursor: pointer; font-size: 13px; }
+.revoked-list > .table { margin-top: 8px; }

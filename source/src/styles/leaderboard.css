@@ -1,0 +1,65 @@
+/* ---------- leaderboard: one sortable table ---------- */
+.leaderboard-table td { vertical-align: middle; }
+.lb-row { cursor: pointer; }
+.lb-row:focus-visible { outline: 2px solid var(--orange-2); outline-offset: -2px; }
+/* Sits above .name-cell's bar fill, which is absolutely positioned behind it. */
+.lb-player { position: relative; display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.lb-player > span:first-of-type { font-weight: 700; }
+
+/* Column headers that sort. Right-aligned to sit over their numbers, and
+   full-height so the whole header cell is the hit target. */
+.sort-th {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: transparent; border: 0; cursor: pointer; padding: 0;
+  color: inherit; font: inherit; text-transform: inherit; letter-spacing: inherit;
+}
+.sort-th:hover:not(:disabled) { color: var(--text); }
+.sort-th.on { color: var(--orange-2); }
+.sort-th:disabled { cursor: default; opacity: 0.5; }
+.sort-th:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 3px; }
+.sort-caret { font-size: 9px; }
+/* The Raids header is the one .val column that carries a second control
+   (this chevron) alongside its sort button. Left in normal inline flow, that
+   second element is what text-align:right on the th actually pushes flush
+   against the edge — the sort button (and "Raids" itself) ends up sitting
+   however much narrower the chevron is to the LEFT of where the column's
+   own right-aligned numbers land below it, reading as a misaligned header
+   even though the <th>/<td> boxes line up exactly. Taking the chevron out of
+   flow (th.val is the positioning context) lets .sort-th alone own the
+   right edge, flush with the data underneath; the chevron floats just past
+   it in the cell's own padding rather than competing for that edge. */
+.table th.val { position: relative; }
+.raid-expand {
+  position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
+  padding: 0 4px;
+  background: transparent; border: 0; cursor: pointer;
+  color: var(--muted); font-size: 11px;
+}
+.raid-expand:hover { color: var(--orange-2); }
+.raid-col { font-size: 12px; }
+/* Raid event history's own per-raid-split toggle: a full-text button sitting
+   in normal flow above its table, not a chevron riding a th.val's sort
+   button — .raid-expand's absolute positioning (relative to whatever
+   positioned ancestor it lands under here, not a th.val) put it in the wrong
+   place entirely, so this gets its own unpositioned rule instead of sharing
+   that class. */
+.raid-split-toggle {
+  padding: 0 4px;
+  background: transparent; border: 0; cursor: pointer;
+  color: var(--muted); font-size: 11px;
+}
+.raid-split-toggle:hover { color: var(--orange-2); }
+
+/* Phone sort picker (Leaderboard.jsx). Hidden here; mobile.css shows it once
+   the table stacks into cards and its sortable header row goes away. */
+.lb-mobile-sort { display: none; align-items: center; gap: 8px; }
+.lb-sort-label { color: var(--muted); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.lb-sort-select,
+.lb-sort-dir {
+  background: var(--bg); color: var(--text); font: inherit; font-size: 14px; font-weight: 700;
+  border: 1px solid var(--border); border-radius: 10px; padding: 0 12px; cursor: pointer;
+}
+.lb-sort-select { flex: 1 1 auto; min-width: 0; }
+.lb-sort-dir { flex: 0 0 auto; white-space: nowrap; }
+.lb-sort-select:focus-visible,
+.lb-sort-dir:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 2px; }

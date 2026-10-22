@@ -1,0 +1,175 @@
+/* ---------- controls ---------- */
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.segmented { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.segmented button {
+  background: transparent; color: var(--muted); border: 0; cursor: pointer;
+  padding: 8px 14px; font-weight: 700; font-size: 13px;
+}
+.segmented button + button { border-left: 1px solid var(--border); }
+.segmented button:hover { color: var(--text); background: var(--bg-2); }
+.segmented button.on { color: #fff; background: linear-gradient(180deg, var(--orange), #c63d18); }
+
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips a, .chips button {
+  color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer;
+  background: transparent;
+  padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px;
+}
+.chips a:hover, .chips button:hover { color: var(--text); border-color: rgba(217, 180, 91, 0.45); text-decoration: none; }
+.chips button.on { color: var(--gold); border-color: rgba(217, 180, 91, 0.6); background: rgba(217, 180, 91, 0.08); }
+
+input.text {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 9px 12px; border-radius: 10px; font-size: 14px; min-width: 220px;
+}
+input.text:focus { outline: none; border-color: rgba(217, 180, 91, 0.5); }
+
+.search-input { position: relative; display: inline-flex; align-items: center; }
+.search-input input.text { padding-right: 30px; }
+.search-clear {
+  position: absolute; right: 6px; background: transparent; border: 0;
+  color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer;
+  padding: 4px 6px; border-radius: 6px;
+}
+.search-clear:hover { color: var(--text); }
+
+.btn {
+  background: linear-gradient(180deg, var(--orange), #c63d18); color: #fff; border: 0;
+  padding: 9px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.danger { background: linear-gradient(180deg, var(--red), var(--red-2)); }
+.btn.success { background: linear-gradient(180deg, var(--green), #1f9d57); }
+
+
+/* The five actions, filling the row: rather than shrinking the buttons to
+   fit a fixed amount of leftover space (which read as cramped and still
+   didn't reliably avoid wrapping), each one grows to claim an equal share
+   of whatever room the row actually has — see .staff-action-btn/
+   .staff-action-item's flex:1 below. Filter chips at the end don't grow
+   (see .staff-filter-chip) — they keep their natural compact size, and the
+   five actions expand into whatever space that leaves them. flex-wrap stays
+   as the safety net at genuinely narrow widths rather than the plan, same
+   "never actually clip/hide content" rule the mobile nav rework followed. */
+.staff-action-row {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+/* The per-action wrapper (divider + button) — grows so its button fills the
+   row's leftover space; min-width:0 lets it actually shrink below its
+   content's natural width under flex-wrap too, instead of forcing a wrap
+   sooner than necessary. */
+.staff-action-item { display: flex; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; }
+/* Splits the row into two groups without needing every button to carry its
+   own color: "look something up / move someone forward" (View Application,
+   Promote) vs "flag or remove a member" (On Leave, Warn, Offboard). */
+.staff-action-divider { width: 1px; align-self: stretch; min-height: 22px; background: var(--border-soft); }
+
+/* A touch smaller than the site's default .btn (sized for a single
+   standalone call-to-action, more padding than five-in-a-row needs).
+   flex:1 is what actually fills the row: the wrapper above claims an equal
+   share of the row's width, and this — the wrapper's only other flex child
+   besides an optional 1px divider — grows to fill all of that share. */
+.staff-action-btn { padding: 7px 14px; font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; }
+
+/* The armed action's own button — a glow ring rather than a color swap
+   (its .btn/.btn.danger/.btn.success fill already carries meaning) so it
+   reads as "this one is active" without losing which action it is. */
+.staff-action-armed-btn {
+  box-shadow: 0 0 0 2px var(--gold), var(--shadow);
+}
+
+/* Staff-only view filters (Trial Members, Up for Removal): share the
+   actions' row, split off by the same divider — no label needed, since the
+   shape alone marks the shift. Deliberately NOT another .btn — a filled
+   gradient button reads as "click to do something", which is exactly
+   backwards for a toggle that narrows what's already on screen. Pill-shaped
+   and outlined instead, the same visual language the page's own
+   search/region/online toolbar chips use further down (.chips), so "this is
+   a filter" is recognizable at a glance from a control staff already know. */
+.staff-filter-chip {
+  color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer;
+  background: transparent;
+  padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px;
+}
+.staff-filter-chip:hover { color: var(--text); border-color: rgba(217, 180, 91, 0.45); }
+.staff-filter-chip.on { color: var(--gold); border-color: rgba(217, 180, 91, 0.6); background: rgba(217, 180, 91, 0.08); }
+
+/* Fixed toast telling staff an action is armed — see StaffActionBar's
+   ArmedToast comment for why it's anchored to the viewport bottom instead of
+   stacked under the sticky nav, and why its z-index sits above a per-member
+   modal's own (60, set inline in components/Modal.jsx) rather than
+   below it like the sticky nav (10) and every other page-level overlay
+   here — it needs to stay visible and clickable through the whole armed
+   lifetime, modal open or not. */
+.staff-action-toast {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  z-index: 65;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  max-width: calc(100vw - 32px);
+  padding: 10px 14px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid rgba(217, 180, 91, 0.45);
+  border-radius: 999px;
+  box-shadow: var(--shadow), 0 0 0 3px rgba(217, 180, 91, 0.12);
+  color: var(--text);
+  font-size: 13px; font-weight: 600;
+}
+.staff-action-toast.danger { border-color: rgba(143, 29, 52, 0.6); box-shadow: var(--shadow), 0 0 0 3px rgba(143, 29, 52, 0.15); }
+.staff-action-toast-blocked { color: #ff8a6a; font-weight: 600; }
+
+/* On narrow viewports the toast's content used to wrap onto multiple lines,
+   and a 999px pill radius on a wrapped flex box ballooned into a huge oval
+   blob (much larger and louder than the single-line desktop pill) that
+   dominated the screen. Force it back to a single compact row instead: the
+   message text ellipsizes rather than wrapping, "blocked" detail drops
+   entirely (there's no room for a third clause on one line — Cancel already
+   dismisses the action if it's blocked), and Cancel stays a small
+   fixed-width pill rather than the full-size desktop button. */
+@media (max-width: 640px) {
+  .staff-action-toast {
+    left: 8px; right: 8px; transform: none;
+    max-width: none;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 7px 8px 7px 12px;
+    border-radius: 999px;
+    box-shadow: var(--shadow), 0 0 0 2px rgba(217, 180, 91, 0.08);
+    font-size: 12px;
+  }
+  .staff-action-toast.danger { box-shadow: var(--shadow), 0 0 0 2px rgba(143, 29, 52, 0.1); }
+  .staff-action-toast-msg {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+  }
+  .staff-action-toast-blocked { display: none; }
+  .staff-action-toast-cancel {
+    flex: 0 0 auto;
+    padding: 5px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Picking mode: every clickable member card gets the same gold glow ring as
+   the armed action button itself (not just on hover), so staff can see at a
+   glance, from anywhere on a long scroll, which cards will accept the armed
+   action — hover then brightens the one about to be picked. Toggled on
+   <body> by Members.jsx rather than threaded through MemberCard as a prop,
+   since it's a page-wide mode, not a per-card concern (and doing it this way
+   costs MemberCard's memoisation nothing — see Members.jsx's onSelect
+   comment).
+   Deliberately a flat, unblurred ring (no var(--shadow), unlike the armed
+   button) — that shadow's 30px blur is cheap for the one button it's
+   normally used on, but this rule can apply it to a hundred-plus cards at
+   once on the roster's longest sections, and rasterising that many blurred
+   shadows is exactly the kind of per-frame repaint cost that made the
+   sticky nav drop its own backdrop-filter blur on this same page (see the
+   .nav override below) — scrolling with an action armed was visibly janky
+   until this dropped the blur. */
+body.staff-picking .member-card {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+body.staff-picking .member-card:hover {
+  box-shadow: 0 0 0 2px #fff;
+}

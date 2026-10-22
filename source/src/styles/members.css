@@ -1,0 +1,105 @@
+/* ---------- members: card grid ---------- */
+/* The roster's default view. Cards are deliberately narrow — the grid should
+   fit 4-5 across a desktop container so a 200-member roster still reads as a
+   roster rather than a scroll. The dense table is one toggle away for anyone
+   who wants columns instead. */
+.member-grid {
+  display: grid; gap: 12px;
+  /* >= .row-menu's own min-width (220px) so the staff "⋯" dropdown never has
+     to overflow past its own card's edge into a neighboring card. */
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+/* Trial Member's "Split by recruit class" view: pending on the left, class
+   complete on the right, each with its own .member-grid — where a recruit
+   stands is the column they're in, not a filter that hides the other half. */
+.class-split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.class-split-col + .class-split-col { border-left: 1px solid var(--border-soft); padding-left: 18px; }
+.class-split-head {
+  font-weight: 700; font-size: 13px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.member-card {
+  position: relative;
+  padding: 12px 12px 10px;
+  background: linear-gradient(180deg, var(--panel), #0d1119);
+  border: 1px solid var(--border);
+  /* Overridden per card with the rank category's colour, the same accent the
+     section's heading and left border use. */
+  border-left: 3px solid var(--orange);
+  border-radius: 10px;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+  /* The whole card is the click target (opens the player panel), not just
+     the name/avatar row — cursor and focus styling live here now instead of
+     on .member-card-open, which is a plain div these days. */
+  cursor: pointer;
+}
+/* The inline border-left-color (the rank accent) outranks this shorthand, so
+   hovering warms the other three edges and leaves the accent alone.
+   z-index matters here: the hover transform makes the card a stacking
+   context, which traps an open "⋯" menu inside it — without this, the next
+   card in the grid paints over the menu simply by coming later in the DOM.
+   :focus-within elevates the same way once the "⋯" button (or a menu item)
+   holds focus, so the menu stays on top even if the pointer isn't still over
+   the card — a plain click-then-move can outrun :hover alone. */
+.member-card:hover, .member-card:focus-within {
+  transform: translateY(-2px); border-color: rgba(217, 180, 91, 0.45); z-index: 2;
+}
+.member-card:hover .member-card-name, .member-card:focus-within .member-card-name {
+  color: var(--orange-2);
+}
+.member-card:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 3px; }
+/* padding-right clears .member-card-status in the corner above it — without
+   it a long enough name would truncate right where the status badge starts
+   overlapping instead of before it. */
+.member-card-open {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 0 70px 0 0; margin-bottom: 6px;
+  color: var(--text); text-align: left;
+}
+.member-card-name {
+  /* --name-color is set inline per-card to the member's rank colour (see
+     nameColor() in lib.js); the var() fallback covers cards that don't set it. */
+  color: var(--name-color, var(--text));
+  font-weight: 700; font-size: 15px;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.member-card-title {
+  font-size: 13px; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.member-card-meta {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: 5px; font-size: 12px; min-height: 18px;
+}
+/* Online state / on-leave / warned / last-seen, pinned to the card's top
+   right corner rather than sitting in the meta rows below the name. */
+.member-card-status {
+  position: absolute; top: 12px; right: 12px; z-index: 1;
+  font-size: 11px; text-align: right; max-width: 90px;
+}
+.member-card-stats {
+  margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--border-soft);
+  font-size: 12px; font-variant-numeric: tabular-nums;
+}
+/* Staff-only recruit-class toggle (Trial Member cards only) — sits in the
+   card's normal flow, below everything else, rather than overlaid on it. */
+.member-card-actions { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--border-soft); }
+.member-card-actions .btn { padding: 2px 8px; font-size: 13px; }
+
+/* The roster table's head doubles as the player-panel trigger (the name
+   itself still links out to Wynncraft). */
+.roster-head-button {
+  padding: 0; margin-right: 6px; background: transparent; border: 0;
+  cursor: pointer; vertical-align: middle; line-height: 0;
+}
+.roster-head-button:focus-visible { outline: 2px solid var(--orange-2); outline-offset: 2px; border-radius: 5px; }
+
+/* The per-section "Rank guide ▸" disclosure that folded the old /ranks chart
+   in next to the members it describes. */
+.rank-guide-toggle {
+  background: transparent; border: 1px solid var(--border); border-radius: 999px;
+  color: var(--muted); font-size: 11px; font-weight: 700; cursor: pointer;
+  padding: 3px 9px; white-space: nowrap;
+}
+.rank-guide-toggle:hover { color: var(--text); border-color: rgba(217, 180, 91, 0.45); }

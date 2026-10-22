@@ -1,0 +1,81 @@
+:root {
+  --bg: #0a0d14;
+  --bg-2: #10141f;
+  --panel: #121724;
+  --border: #232b3d;
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --orange: #f05126;
+  --orange-2: #ff7a45;
+  --gold: #d9b45b;
+  --green: #2ecc71;
+  --teal: #2ec4d6;
+  --blue: #3498db;
+  --purple: #9b59b6;
+  /* Deep crimson/maroon rather than a bootstrap-style flat red — the brand
+     orange (above) already sits close to red on the hue wheel, so a plain
+     red danger color reads as barely-distinguishable from it. This one is
+     both cooler (pink-leaning hue) and much darker, so it reads as its own
+     "wine red" rather than a shade of the same orange. */
+  --red: #8f1d34;
+  --red-2: #4a0e1f;
+  /* The wine red above is a fill color — too dark to read as text on the dark
+     panels. This brighter one is the negative counterpart to --green for +/−
+     numeric deltas. */
+  --red-text: #ef4444;
+  --text: #e9ecf2;
+  --muted: #98a1b5;
+  --radius: 14px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --serif: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  --sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { height: 100%; }
+body {
+  margin: 0;
+  min-height: 100%;
+  /* Flat fill only. The two brand glows live on the fixed ::before layer
+     below rather than on this element — see the note there. */
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* iOS Safari "text autosizing" reflows a rotated phone by inflating font
+     sizes on whichever block it decides is the main column — which desynced
+     the map labels from the map and made the nav jump a size on rotate. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+/* The two brand glows, pinned to the viewport.
+ *
+ * These need to stay put while the page scrolls (on the scrolling background
+ * they were painted across the first viewport only, and their hard edges
+ * showed at the page's bottom corners). `background-attachment: fixed` did
+ * that, but it makes the background's paint depend on scroll offset, so the
+ * browser has to re-rasterize two full-viewport radial gradients on every
+ * scroll frame of every page — the cost lands hardest exactly where it is
+ * least affordable, on a software rasterizer and in Firefox, which does not
+ * hand fixed backgrounds to the compositor.
+ *
+ * A fixed-position layer behind the content is the same picture with none of
+ * that: it is painted once and then only ever moved, so scrolling the roster,
+ * the leaderboard or a loot pool no longer repaints the gradients at all.
+ * z-index -1 keeps it behind everything (#root establishes no stacking
+ * context of its own), pointer-events:none keeps it out of hit-testing.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(240, 81, 38, 0.08), transparent 60%),
+    radial-gradient(1000px 520px at -10% 8%, rgba(22, 32, 58, 0.6), transparent 55%);
+}
+/* 100dvh follows the mobile URL bar as it collapses and re-expands; the 100vh
+   declaration above it is the fallback for browsers without dvh, and must
+   stay first so those browsers still get a full-height shell. */
+#root { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+a { color: var(--orange-2); text-decoration: none; }
+a:hover { text-decoration: underline; }

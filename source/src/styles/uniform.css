@@ -1,0 +1,113 @@
+/* ---------- Uniform page ---------- */
+.uniform-layout {
+  display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+  gap: 18px; align-items: start;
+}
+.uniform-config { display: flex; flex-direction: column; gap: 16px; }
+.uniform-field { display: flex; flex-direction: column; gap: 7px; }
+.uniform-field-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.9px; color: var(--muted);
+}
+.uniform-field-hint { color: var(--muted); font-size: 12px; line-height: 1.45; }
+.uniform-field .segmented { align-self: start; flex-wrap: wrap; }
+/* .text (controls.css) is scoped to input.text, so a <select> needs its own
+   copy of the same look. Leaving `appearance` untouched (like .lb-sort-select
+   in leaderboard.css does) still leaves the native dropdown *arrow* under the
+   browser/OS's own control — on this control that native arrow visibly
+   flashes to its own default (light) hover/open style, clashing with the
+   dark custom box around it. appearance: none removes that native arrow
+   entirely; the chevron below is a plain SVG drawn in the same muted grey
+   every other icon on the site uses, so it never has its own hover state to
+   clash with. */
+.uniform-field select.text {
+  width: 100%;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 6px 30px 6px 10px; border-radius: 8px; font-size: 13px; font: inherit;
+  cursor: pointer; appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2398a1b5' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+/* Same treatment as input.text:focus (controls.css) — a border highlight,
+   not a ring — rather than the browser's own default focus outline, which
+   on this dark box renders as a stray pale/white rectangle. */
+.uniform-field select.text:focus {
+  outline: none; border-color: rgba(217, 180, 91, 0.5);
+}
+/* A medal position locked because its predecessor is still "No Medal" (see
+   PositionPicker) — dimmed and inert rather than just unlabeled, so the
+   ordering rule reads as the control's own state, not a stray bug. */
+.uniform-field select.text:disabled {
+  opacity: 0.45; cursor: not-allowed;
+}
+
+/* Heading for the "choose which medal goes where" block (see Uniform.jsx's
+   PositionPicker) — sits in the same config card as Username/Season/Model,
+   right above the Preview button, so the same top-border divider
+   .uniform-prompt already uses marks it as its own sub-section rather than
+   one more plain field. The medal selects right after this are plain
+   .uniform-fields, so they already match the rest of the card's
+   spacing/typography with no extra rules needed. */
+.uniform-medal-positions-intro {
+  padding-top: 14px; border-top: 1px solid var(--border-soft);
+}
+
+.uniform-go { display: block; width: 100%; margin-top: 2px; }
+.uniform-prompt {
+  margin: 2px 0 0; padding-top: 14px; border-top: 1px solid var(--border-soft);
+  color: var(--muted); font-size: 13px; line-height: 1.5;
+}
+.uniform-error { margin-top: 4px; }
+
+/* Right card: the 3D preview and everything about the result live together. */
+.uniform-stage {
+  min-height: 420px;
+  display: flex; align-items: center; justify-content: center;
+  /* Same panel gradient every .card uses, plus a faint gold spotlight where
+     the model stands, so the 3D view reads as part of the panel. */
+  background:
+    radial-gradient(58% 55% at 50% 40%, rgba(217, 180, 91, 0.07), transparent 78%),
+    linear-gradient(180deg, var(--panel), #0d1119);
+}
+.uniform-result {
+  display: flex; flex-direction: column; align-items: center;
+  width: 100%; max-width: 340px;
+}
+.uniform-rule { width: 100%; margin-top: 14px; }
+
+.uniform-facts {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px;
+  width: 100%; margin: 12px 0 16px;
+}
+.uniform-facts dd { margin: 0; }
+.uniform-fact-label {
+  color: var(--muted); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;
+}
+.uniform-fact-value { font-size: 14px; font-weight: 600; }
+.uniform-fact-note { color: var(--muted); font-weight: 400; font-size: 12px; }
+.uniform-medals { display: inline-flex; gap: 5px; flex-wrap: wrap; }
+/* Colour (border/bg/text) is set inline per medal — its Discord role colour. */
+.badge.medal { border: 1px solid transparent; }
+
+.uniform-download { display: block; width: 100%; text-align: center; text-decoration: none; }
+.uniform-download:hover { text-decoration: none; }
+
+.uniform-stage-empty { text-align: center; color: var(--muted); }
+.uniform-stage-empty-title {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 0.5px;
+  font-size: 18px; color: var(--text); margin-bottom: 4px;
+}
+.uniform-stage-empty p { margin: 0; font-size: 13px; }
+
+.skin-viewer { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+/* Transparent — the .uniform-stage gradient behind it is the backdrop, so the
+   model floats directly on the panel with no seam. */
+.skin-viewer-canvas { max-width: 100%; background: transparent; cursor: grab; }
+.skin-viewer-canvas:active { cursor: grabbing; }
+.skin-viewer-hint { font-size: 11px; margin: 0; color: var(--muted); }
+
+@media (max-width: 780px) {
+  .uniform-layout { grid-template-columns: 1fr; }
+  .uniform-stage { min-height: 0; padding-top: 24px; padding-bottom: 24px; }
+}

@@ -1,0 +1,36 @@
+/* ---------- player panel (shared by both pages) ---------- */
+.player-panel-head { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
+.player-panel-title {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 0.5px;
+  font-size: 19px; font-weight: 700;
+}
+.stat-tiles { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+.stat-tile {
+  padding: 10px 12px; background: var(--bg); border: 1px solid var(--border-soft);
+  border-radius: 10px;
+}
+.stat-tile-label {
+  color: var(--muted); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+.stat-tile-value {
+  font-size: 20px; font-weight: 700; color: var(--orange-2);
+  font-variant-numeric: tabular-nums;
+}
+.stat-tile-sub { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.player-facts {
+  display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-soft);
+  font-size: 13px;
+}
+.player-fact-label {
+  color: var(--muted); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+
+/* Card hover lift and the panel's transitions are decoration; honour a
+   reduced-motion preference by dropping the movement, not the styling. */
+@media (prefers-reduced-motion: reduce) {
+  .member-card { transition: none; }
+  .member-card:hover { transform: none; }
+}

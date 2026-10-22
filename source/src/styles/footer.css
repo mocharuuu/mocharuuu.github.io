@@ -1,0 +1,8 @@
+/* ---------- footer ---------- */
+.footer {
+  display: flex; gap: 10px; align-items: center; justify-content: center;
+  flex-wrap: wrap;
+  padding: 22px 18px 30px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--border);
+}
+.footer img { opacity: 0.65; }

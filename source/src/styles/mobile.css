@@ -1,0 +1,717 @@
+/* ---------- mobile ---------- */
+@media (max-width: 680px) {
+  /* Compact two-row nav: brand centred on its own row, every link in one
+     tight row below (sizes chosen so the five public links fit a 320px
+     viewport). */
+  /* env(safe-area-inset-*) is 0 everywhere except a notched/rounded phone,
+     where it is the number of px the browser is telling us are physically
+     unusable. On an iPhone in landscape the left inset is 48px, which is
+     exactly how much of the nav used to sit under the notch. */
+  .nav {
+    padding: 6px calc(10px + env(safe-area-inset-right, 0px)) 6px calc(10px + env(safe-area-inset-left, 0px));
+    gap: 0 3px;
+  }
+  /* The link row used to be two rows tall, and with each row a 44px tap
+     target the nav was the single biggest consumer of a phone screen on the
+     site. It is one row now: the labels shrink with the viewport (clamp on
+     vw) and the padding is down to 5px a side, which fits all five public
+     links on a 320px screen with room to spare. The brand row still gives
+     back what space it can. */
+  .brand { flex: 0 0 100%; justify-content: center; margin-right: 0; }
+  .brand img { height: 22px; }
+  .wordmark { font-size: 16px; }
+  /* nowrap is what actually guarantees the single row; the clamp only makes
+     the common case fit without scrolling. A signed-out visitor also gets
+     "Member Login", which can overflow a narrow phone -- so the link row
+     scrolls sideways rather than wrapping back to two rows and undoing the
+     height saving. The scrollbar is hidden because on a phone it would be a
+     permanent grey bar under the links. */
+  .nav-links {
+    margin-left: 0; flex: 1 1 100%;
+    /* nowrap, not the base rule's wrap: with two children (the scroll
+       wrapper below plus the profile chip) flex line-breaking is decided
+       from their unshrunk content width, so "wrap" would push the chip
+       onto its own second row even though the scroll wrapper is willing
+       to shrink and scroll instead. */
+    flex-wrap: nowrap;
+    justify-content: center;
+    /* Without this, .nav-links (itself a flex item with no overflow set)
+       keeps an auto min-width equal to its content's full size, so it
+       refuses to shrink below the scroll wrapper's unclipped width —
+       which pushes .nav, and the whole page, wider than the viewport
+       instead of letting the wrapper's own overflow-x handle it. */
+    min-width: 0;
+  }
+  /* Only the link list scrolls sideways — the profile chip (and its
+     dropdown) sits outside this wrapper so overflow-y:hidden here can't
+     clip the dropdown when it opens below the chip. */
+  .nav-links-scroll {
+    flex: 1 1 auto;
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  .nav-links-scroll::-webkit-scrollbar { display: none; }
+  /* Scroll hint: the only sign the row scrolls, since the scrollbar itself
+     is hidden above. A plain dark-to-transparent fade turned out to be
+     invisible here — it's a dark gradient sitting on an already-dark nav, so
+     there was nothing to see it against. A chevron in the brand orange gives
+     it actual contrast. App.jsx toggles these two classes from real
+     scrollLeft/scrollWidth, so it tracks true position — both arrows
+     mid-scroll, just the trailing one at the start, neither once scrolled to
+     an end or if every link already fits without scrolling at all.
+
+     The arrows live on .nav-links-scroll-wrap, one level up from the
+     scrolling element, not on .nav-links-scroll itself — an absolutely
+     positioned pseudo-element whose containing block is ALSO the scrolling
+     element scrolls away with the rest of the content (its left/right
+     offset is resolved against that box's own scrolled coordinate space),
+     so it only ever lined up with the edge at scrollLeft 0 and vanished the
+     instant the row moved. Anchoring to the non-scrolling wrapper instead
+     keeps it pinned to the visible edge regardless of scroll position.
+     pointer-events:none keeps it from stealing a tap meant for the link
+     underneath. */
+  .nav-links-scroll-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
+  .nav-links-scroll-wrap::before,
+  .nav-links-scroll-wrap::after {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 32px;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    font: 700 20px/1 var(--sans);
+    color: var(--orange-2);
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.85);
+    z-index: 1;
+  }
+  .nav-links-scroll-wrap::before {
+    content: "‹";
+    left: 0;
+    justify-content: flex-start;
+    padding-left: 2px;
+    background: linear-gradient(to right, rgba(10, 13, 20, 0.97) 50%, transparent);
+  }
+  .nav-links-scroll-wrap::after {
+    content: "›";
+    right: 0;
+    justify-content: flex-end;
+    padding-right: 2px;
+    background: linear-gradient(to left, rgba(10, 13, 20, 0.97) 50%, transparent);
+  }
+  .nav-links-scroll-wrap.nav-scroll-fade-left::before { opacity: 1; }
+  .nav-links-scroll-wrap.nav-scroll-fade-right::after { opacity: 1; }
+  .profile-chip-wrap { flex: 0 0 auto; }
+  .nav-links a {
+    padding: 0 5px; font-size: clamp(11px, 3.1vw, 13px);
+    white-space: nowrap; flex: 0 0 auto;
+  }
+
+  /* StaffActionBar on mobile: labels stay on (icon-only was unreadable — a
+     wall of same-sized colour squares with no text to tell them apart), and
+     the row wraps rather than scrolling or clipping. Sized deliberately
+     tight — smaller than the desktop compact size — so the five actions
+     plus the two filter chips land in two rows instead of three: roughly
+     Application/Promote/On Leave/Warn on the first, Offboard/Pages/Removals
+     on the second, though the exact split shifts with the live Removals
+     count's digit width. Drops the desktop row's flex:1 fill
+     (.staff-action-item/.staff-action-btn) back to natural, label-sized
+     width — evenly stretching buttons to fill leftover width is a wide-row
+     problem; on a phone each one should just be as wide as its own label. */
+  .staff-action-row { gap: 5px; }
+  .staff-action-item { flex: 0 0 auto; gap: 4px; }
+  .staff-action-btn, .staff-filter-chip { padding: 4px 7px; font-size: 11px; flex: 0 0 auto; }
+
+  .container {
+    padding: 20px calc(14px + env(safe-area-inset-right, 0px))
+             calc(48px + env(safe-area-inset-bottom, 0px))
+             calc(14px + env(safe-area-inset-left, 0px));
+  }
+  /* 44px wraps "Kingdom of Foxes" onto two lines below ~430px; 8.5vw keeps
+     it on one (32px fits a 375px viewport with margin to spare). */
+  .hero-title { font-size: clamp(26px, 8.5vw, 44px); }
+  .hero-crest { height: 120px; }
+  /* Sticky nav here is a brand row plus one 44px link row, ~83px, not the
+     desktop ~55px -- an anchor jump that ignores it lands the heading under
+     the nav. Measured, not guessed; re-measure if the nav rows change. */
+  .toolbar .search-input { flex: 1 1 100%; min-width: 0; }
+  .toolbar input.text { min-width: 0; width: 100%; }
+  .segmented { flex-wrap: wrap; }
+
+  .territory-map-fullscreen { min-height: 340px; }
+  /* NB: .territory-map-viewport must never take a border. Its
+     position:absolute children (.territory-map-camera, the label layer) are
+     laid out from its padding box, while TerritoryMap.jsx measures pointer
+     positions against its border box, and those two origins differ by
+     exactly the border width. An 8px padding used to sit here; padding turns
+     out NOT to shift that origin (it lives inside the padding box), so it was
+     never the cause of the pinch drift it was blamed for — that was the pinch
+     anchoring itself. It is still gone, because it shrank the map for no
+     reason. A border would genuinely skew the pointer maths; viewportInsetRef
+     compensates for one, but not having one is simpler. */
+  /* The markers' 4px corner radius on touch now comes from markerRadius in
+     TerritoryMap.jsx, since they are canvas rects rather than elements. */
+
+  /* The detail card was a 360px pane pinned to the map's top-right corner.
+     At 390px wide that is the whole screen minus 30px, laid over the part of
+     the map the user just tapped — so selecting a territory hid the thing
+     you selected. As a bottom sheet it covers the half of the map furthest
+     from the thumb, sitting above both the control row and
+     .territory-map-res-tick's own row stacked above that, so none of the
+     three ever fight over the same strip of screen and the map controls
+     stay reachable with the sheet open. Deliberately the same 96px the
+     desktop/wide-touch .territory-panel backs off (see its comment) rather
+     than a separate, smaller number tuned tighter to this row's own
+     control-row height: an earlier, tighter value here (92px) left only a
+     2px margin against .territory-map-res-tick in practice, which text
+     metrics alone can eat — 96px keeps a real 4px+ margin everywhere (see
+     that element's own comment) instead of shaving this one context's
+     already-thin clearance even further. */
+  .territory-panel {
+    top: auto;
+    left: calc(10px + env(safe-area-inset-left, 0px));
+    right: calc(10px + env(safe-area-inset-right, 0px));
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: none;
+    /* Measured: at 52dvh the sheet left only ~180px of map visible above it
+       on a 390x844 phone, which is not enough to keep your bearings. 46dvh
+       leaves ~320px, and the panel scrolls internally anyway, so the cost is
+       a shorter scroll rather than lost content. */
+    max-height: min(46vh, calc(100% - 150px));
+    max-height: min(46dvh, calc(100% - 150px));
+    padding-bottom: 14px;
+    /* A bottom-anchored sheet reads as attached to the bottom edge, so the
+       top corners are the ones that need rounding off. */
+    border-radius: 16px 16px 12px 12px;
+    /* Rubber-banding at the end of the sheet's own scroll used to chain into
+       the page behind it. */
+    overscroll-behavior: contain;
+  }
+  /* The sheet is wider than the desktop card, so the header can use the room
+     the (now much larger) close button needs. */
+  .territory-panel-head { padding-right: 46px; }
+
+  /* Both this and .territory-panel end up bottom-anchored above the control
+     row, and .territory-panel carries z-index 25 — without this, opening a
+     settings popup while a territory was selected painted it *behind* the
+     detail sheet, i.e. the popup appeared not to open at all. A popup is an
+     explicit, transient action, so it wins. */
+  .territory-map-settings-panel { z-index: 30; }
+
+  /* Each popup is anchored right:0 inside its own 60px toggle, and the
+     toggles sit in a right-aligned row of four — so the leftmost toggle's
+     300px-wide popup started ~126px off the left edge of a 390px phone
+     (196px off a 320px one), i.e. most of the guild search and leaderboard
+     panels were simply unreachable. On a phone, anchor them to the viewport
+     instead of to their button. */
+  .territory-map-settings-panel {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    /* --map-keyboard-inset is however much of the screen the software
+       keyboard is covering (0 when it is closed); see TerritoryMapView. */
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px) + var(--map-keyboard-inset, 0px));
+    min-width: 0;
+    max-width: none;
+    width: auto;
+  }
+  .territory-map-guild-panel { min-width: 0; }
+  .territory-map-settings-panel-scroll {
+    /* The desktop cap is min(320px, 100vh - 220px), which on a 390px-tall
+       landscape phone collapses to ~170px — about five rows. Measure against
+       the popup's own offset from the top of the screen instead. */
+    max-height: min(46vh, calc(100vh - 190px));
+    max-height: min(46vh, calc(100dvh - 190px));
+  }
+
+  /* Wide tables (roster/ranks — opt in via the extra "stack" class) collapse
+     into stacked per-row cards: the lead cell (.stack-head) becomes a
+     heading, data-label cells a two-up facts grid with the label engraved
+     above each value, and .stack-wide cells span the full row. */
+  .table.stack, .table.stack tbody { display: block; }
+  .table.stack colgroup, .table.stack thead, .table.stack .stack-hide { display: none; }
+  /* Grid, not flex-wrap: the gutter between the two columns has to come from
+     the container. Doing it per-cell means guessing which cells land in the
+     right-hand column, and .stack-head carries order:-1, so DOM parity and
+     visual position disagree the moment a table has one. */
+  .table.stack tr {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 9px 14px;
+    padding: 12px 2px; border-bottom: 1px solid var(--border-soft);
+  }
+  .table.stack tr:last-child { border-bottom: 0; }
+  .table.stack tr:hover td { background: transparent; }
+  .table.stack td {
+    min-width: 0; border: 0; padding: 0;
+    white-space: normal; overflow: visible; text-overflow: clip;
+    /* .val right-aligns numbers so they tabulate down a desktop column. There
+       is no column here — each cell is half a row — so right-alignment just
+       shoves every second value into the middle of the card and strands the
+       label above it on the far side. Aligning every stacked cell to its own
+       edge is what makes the label/value pairs read as a grid. */
+    text-align: left;
+  }
+  .table.stack td[data-label]::before {
+    content: attr(data-label);
+    display: block; color: var(--muted); font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .table.stack .stack-head { grid-column: 1 / -1; order: -1; font-size: 15px; }
+  .table.stack .stack-wide { grid-column: 1 / -1; }
+
+  /* Leaderboard row: the rank sits in a fixed gutter beside the player's
+     name (it was a labelled "RANK" fact of its own, which spent a whole
+     column on a medal), and Raids/XP/Wars read as one 3-up line under the
+     name. The per-raid split would add a cell per raid to every card, so only
+     the raid the board is sorted by (if any) is shown — as a 4th column.
+     The sorted value is tinted, since the header row that says what the
+     board is sorted by is hidden here; the toolbar's picker replaces it. */
+  .leaderboard-table.stack tr {
+    position: relative;
+    grid-template-columns: repeat(3, 1fr); gap: 8px 8px;
+    padding: 12px 2px 12px 44px;
+  }
+  .leaderboard-table.stack.raid-sorted tr { grid-template-columns: repeat(4, 1fr); }
+  .leaderboard-table.stack td.rank {
+    position: absolute; left: 0; top: 12px; width: 38px;
+    text-align: center; font-size: 15px; line-height: 22px;
+  }
+  .leaderboard-table.stack td.rank::before { content: none; }
+  .leaderboard-table.stack .raid-col { display: none; }
+  .leaderboard-table.stack .raid-col.sorted { display: block; }
+  .leaderboard-table.stack td.val { font-size: 15px; font-variant-numeric: tabular-nums; }
+  .leaderboard-table.stack td.val:not(.muted) { color: var(--text); }
+  .leaderboard-table.stack td.sorted,
+  .leaderboard-table.stack td.sorted::before { color: var(--orange-2); }
+  .leaderboard-table.stack .lb-row:active { background: var(--bg-2); }
+
+  /* Leaderboard toolbar, top to bottom: search, the period switch at full
+     width (three equal buttons rather than one that wraps under the others),
+     the sort picker, then the online filter with the count beside it. */
+  .lb-toolbar .segmented { flex: 1 1 100%; flex-wrap: nowrap; }
+  .lb-toolbar .segmented button { flex: 1 1 0; padding-left: 6px; padding-right: 6px; }
+  .lb-mobile-sort { display: flex; flex: 1 1 100%; min-width: 0; }
+  .lb-sort-select { flex-basis: 0; }
+  .lb-sort-select, .lb-sort-dir { min-height: 44px; }
+  /* 16px: iOS zooms the page on focusing a select under that, like inputs. */
+  .lb-sort-select { font-size: 16px; }
+  .lb-toolbar .pill { margin-left: auto; }
+
+  /* Tables that have not opted into the stacked-card treatment above (the
+     admin/diagnostic grids, and the narrow ones that genuinely fit) still
+     have to not blow out the page: display:block turns the table itself into
+     the scroll container, so a wide one scrolls sideways inside the card it
+     lives in instead of pushing the whole document 200px wide. */
+  .table:not(.stack) {
+    display: block;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  /* Cards get narrower rather than dropping to one per row — two up still
+     reads fine at 375px and halves the scrolling. */
+  .member-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  /* At ~170px card width the desktop layout — status badge pinned to the
+     top-right corner, name row padded to clear it — left the name almost no
+     room, truncating it to a single letter. Drop the corner reserve on
+     mobile so the name gets the card's full width, and put the status badge
+     (still the same absolutely-positioned element on desktop — position:
+     absolute doesn't care where in the DOM it lives) on the guild-rank
+     line instead, where there's room to spare. The rank text shrinks with
+     an ellipsis rather than ever pushing the badge or wrapping onto the
+     region/meta line below it. */
+  .member-card { padding: 10px; }
+  .member-card-open { padding-right: 0; }
+  .member-card-title-row { display: flex; align-items: baseline; gap: 6px; }
+  .member-card-title { flex: 1 1 auto; min-width: 0; }
+  .member-card-status { position: static; max-width: none; flex: 0 0 auto; text-align: right; }
+  /* Side-by-side columns don't fit a phone width — stack pending above
+     complete instead, each still its own full-width .member-grid. */
+  .class-split { grid-template-columns: 1fr; gap: 16px; }
+  .class-split-col + .class-split-col { border-left: 0; padding-left: 0; border-top: 1px solid var(--border-soft); padding-top: 16px; }
+  .stat-tiles { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+  /* The stacked leaderboard row puts the player on their own line, so the
+     bar fill (absolutely positioned against the desktop cell) has nothing
+     sensible to size against. Every other cell falls through to the shared
+     two-up .table.stack layout, which is the right shape here. */
+  .table.stack .name-cell .bar { display: none; }
+
+  .footer {
+    padding: 22px calc(18px + env(safe-area-inset-right, 0px))
+             calc(30px + env(safe-area-inset-bottom, 0px))
+             calc(18px + env(safe-area-inset-left, 0px));
+  }
+
+  /* .loot-pool-card's max-height (theme.css, "Height tracks the viewport"
+     comment) is tuned against the desktop nav's ~55px and a single-row
+     toolbar. Mobile's nav runs ~83px (two rows, see the sticky-nav comment
+     above) and the Raid/Lootrun toggle + countdown toolbar wraps taller
+     too, so that same fixed subtraction leaves too
+     little of the sum accounted for — the card claims more of the viewport
+     than is actually left, and the footer ends up crowded or clipped below
+     it. Rather than chase an exact mobile constant, let the card grow with
+     its content and the page scroll normally instead — mobile users scroll
+     pages routinely, so there's no real need to fit everything above the
+     fold the way the desktop layout does. */
+  .loot-pool-card { max-height: none; overflow-y: visible; }
+}
+
+/* Staff-action modals (components/staff/). Lives here rather than in the
+   component's inline style because a React style object holds exactly one
+   value per property, and dvh needs a vh line under it for iOS below 15.4. */
+.modal-card {
+  max-width: 560px;
+  width: 100%;
+  max-height: 85vh;
+  max-height: 85dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: var(--shadow);
+}
+.modal-card .section-head { justify-content: space-between; }
+
+/* ---------- touch ----------
+   Keyed on (pointer: coarse) rather than a width, because the two are not the
+   same question. A 500px-wide desktop window is still a mouse and wants the
+   dense layout; a phone rotated into landscape is 844px wide and still has a
+   fingertip, no hover, and no scroll wheel. Everything below is either a hit
+   area or a hover-only affordance, so it belongs to the input device.
+   Nothing in here matches on a mouse, which is what keeps the desktop
+   rendering byte-identical to before. */
+@media (pointer: coarse) {
+  /* One button now, not four — so it can be smaller without becoming a
+     cramped target, and it leaves the map itself that much less obstructed.
+     46px (down from 52px) frees a bit more of the strip above the row for
+     .territory-map-res-tick, still comfortably above the ~44px minimum
+     touch target. */
+  .territory-map-settings-toggle { width: 46px; height: 46px; font-size: 30px; }
+  .territory-map-settings-toggle-icon { width: 22px; height: 22px; }
+
+  /* Touch keeps the smaller, previously-verified-safe size rather than
+     inheriting the bigger desktop/mouse one above: this control row is 2px
+     taller than the mouse-only 44px one that size was tuned against, and a
+     touch device is also where the mobile bottom-sheet .territory-panel
+     shows up, whose own clearance this same math has to clear too. bottom:
+     66px + a 26px-tall row (line-height 16px + 4px padding each side + 1px
+     border each side) keeps the real ≥4px margins confirmed against both
+     the 46px control row and .territory-panel's 96px cutoff. */
+  .territory-map-res-tick {
+    bottom: 66px;
+    padding: 4px 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  /* backdrop-filter is the most expensive property on the page once the
+     browser is rasterizing in software: it reads back and gaussian-blurs
+     everything behind the element on every frame the content behind it
+     changes. Both of these sit over content that moves constantly — .nav is
+     sticky over every scrolling list on the site, and .territory-panel is a
+     full-width bottom sheet laid over the map, so it re-blurs on every frame
+     of a pan while a territory is selected, which on touch is the normal
+     state. Opaque backgrounds instead; the panel was already at 0.96 alpha, so
+     its blur was buying almost nothing to begin with. Fine-pointer devices
+     keep the frosted look. */
+  .nav {
+    background: #0a0d14;
+    backdrop-filter: none;
+  }
+  .territory-panel {
+    background: #0a101a;
+    backdrop-filter: none;
+  }
+
+  /* iOS Safari zooms the page in whenever a focused input's text is under
+     16px, and does not zoom back out on blur — so typing in any of the search
+     boxes (all 13-14px) left the site stuck at ~1.3x with the nav cropped.
+     16px is the documented threshold, not a preference. */
+  /* input.text has to be named explicitly: a media query adds no specificity,
+     so the site's own `input.text { font-size: 14px }` (0,1,1) outranked a
+     bare `input` (0,0,1) in here and every search box stayed at 14px. Same
+     specificity now, and this block is last in the file. */
+  /* .territory-map-guild-search is the same trap one class further along: at
+     (0,1,0) it outranked the bare `input` here and stayed at 13px, so tapping
+     the guild search in the map's control sheet force-zoomed the page — and
+     because the sheet is bottom-anchored, the zoom left the map unusable
+     rather than merely scaled. Any new input with its own class needs adding
+     here too. */
+  input, select, textarea,
+  input.text,
+  .territory-map-guild-search,
+  .points-input { font-size: 16px; }
+  /* 220px + 16px text overflows a 375px screen once the toolbar's gap and the
+     container padding are taken out; it only ever needed to be wide enough to
+     read a name. */
+  input.text { min-width: 0; }
+
+  /* The grey flash Chrome/Safari paint over a tapped element is drawn on the
+     element's own box, so it ignored every rounded corner on the site and
+     flashed a hard rectangle. Each of these already has its own :active or
+     .on state to acknowledge the tap. */
+  a, button, summary, [role="button"], input, select, label {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ---- hit areas ----
+     WCAG 2.5.5 and the Apple HIG both put the floor at 44px; measured before
+     this, the nav links were 30px tall, the filter chips 26px, the segmented
+     buttons 31px and the rank-guide toggle 21px. Only min-height is set (with
+     flex centring to keep the label optically centred), so every one of these
+     grows downward and none of them gets wider — which matters because the
+     mobile nav packs its links into a single non-wrapping row, and any extra
+     width would push the last of them off the edge into a sideways scroll. */
+  .nav-links a,
+  .chips a,
+  .chips button,
+  .segmented button,
+  .rank-guide-toggle,
+  .profile-chip,
+  .btn,
+  .footer a,
+  .week-calendar-cell.selectable {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+  /* Left-aligned rather than centred: this one is a whole card row (the
+     member name and avatar), not a pill. */
+  .member-card-open { min-height: 44px; }
+
+  /* .brand is deliberately absent from the lists above. It is a 26-34px tall
+     link to Home sitting directly above a "Home" nav link that is now a full
+     44px — WCAG 2.5.5's "equivalent control on the same page" exception. The
+     alternative, a 44px brand row, adds 20px to a sticky nav that is already
+     the tallest thing on a phone screen, for a target the user has no reason
+     to reach for. Same reasoning, differently: .territory-marker cannot be
+     44px because it is map geometry at map scale — the zoom controls,
+     double-tap and pinch exist to make small ones reachable instead. */
+  /* 6px of gap between two 44px targets is inside the margin of error for a
+     fingertip; 8px is the smallest separation that reliably reads as two. */
+  .chips { gap: 8px; }
+  .profile-dropdown button,
+  .profile-dropdown a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Small icon buttons that sit inside dense rows and genuinely cannot grow
+     to 44px without wrecking the row they live in. The transparent ::before
+     extends the *hit* area to 44px in both axes while the painted button
+     keeps its size, so the layout is untouched. The insets are deliberately
+     asymmetric where a neighbour is close: two overlapping hit areas send the
+     tap to whichever is later in paint order, which is worse than a small
+     target because it is wrong rather than merely fiddly. */
+  /* Column-sort and row-expand affordances live inside table cells: growing
+     them would grow every row. Vertical-only hit expansion instead — the
+     cells above and below are the same control's own padding, but the cells
+     left and right are a *different* column's sort button, so the horizontal
+     expansion stays small enough that two never overlap. */
+  .sort-th,
+  .raid-expand {
+    position: relative;
+  }
+  /* .table th carries `padding: 8px 10px`, so there are exactly 20px of dead
+     space between one column's sort button and the next one's. Taking 10px
+     per side uses all of it and leaves the two hit boxes touching but never
+     overlapping — 23x19 painted becomes 43x45 hit, up from 23x19. */
+  .sort-th::before {
+    content: "";
+    position: absolute;
+    inset: -13px -10px;
+  }
+  /* The row-expand chevron sits alone in its cell with no horizontal
+     neighbour, so it can have the full 44px in both directions. */
+  .raid-expand::before {
+    content: "";
+    position: absolute;
+    inset: -16px -15px;
+  }
+
+  .roster-head-button {
+    position: relative;
+  }
+  .roster-head-button::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* The pin and the remove sit 6px apart inside one chip, so they are the one
+     place a 44px-wide hit box each would actively misfire: the two boxes
+     would overlap by 20px and half of "pin" would remove the guild instead.
+     Widen the buttons to 28px and the gap to 8px -- centres 36px apart -- and
+     then take the hit area to a full 44px vertically but only to the halfway
+     line horizontally, so the boxes meet and never cross. */
+  .territory-map-guild-chip { gap: 8px; }
+  .territory-map-guild-chip-remove {
+    width: 28px;
+    height: 28px;
+    position: relative;
+  }
+  .territory-map-guild-chip-remove::before {
+    content: "";
+    position: absolute;
+    inset: -8px -4px;
+  }
+
+  /* The "add this guild" plus only faded in on :hover, an event a touchscreen
+     never sends — so on a phone the search results looked like plain,
+     unactionable rows. (The row itself was tappable, but nothing said so.) */
+  .territory-map-guild-result-add {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Sixteen 20px steppers, in pairs, in a two-column grid. Growing the button
+     itself to 44px would nearly double the height of the whole simulator
+     panel, so it grows to 34px and borrows the remaining 10px from the
+     ::before above. -5px keeps the hit box clear of the 8px row gap. */
+  .territory-sim-step-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+    position: relative;
+  }
+  .territory-sim-step-btn::before {
+    content: "";
+    position: absolute;
+    inset: -5px;
+  }
+
+  /* 24px, in the corner of a panel, next to the panel's own scroll area —
+     the single hardest thing on the page to hit, and the only way to dismiss
+     the detail view other than finding empty map to tap. */
+  .territory-panel-close {
+    top: 4px;
+    right: 4px;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  /* Panels that scroll internally: stop a flick that reaches the end of the
+     list from continuing into the page (or, on the map, into the browser's
+     own pull-to-refresh) behind it. */
+  .territory-panel,
+  .territory-map-settings-panel-scroll,
+  .row-menu,
+  .profile-dropdown {
+    overscroll-behavior: contain;
+  }
+}
+
+/* ---------- landscape phone ----------
+   A phone on its side is ~390px tall but ~844px wide, so it misses the 680px
+   mobile block entirely and gets the full desktop map chrome inside a third
+   of the height. Height, not width, is the constraint here. */
+@media (max-height: 540px) and (pointer: coarse) {
+  /* Already small against a 390px-tall map, but the sheet it opens needs
+     every row it can get here. */
+  .territory-map-settings-toggle { width: 42px; height: 42px; }
+
+  /* calc(100% - 24px) of a 335px-tall map is 311px, and the panel is pinned
+     top-right while the controls are pinned bottom-right — so a long panel
+     grew straight down over all four of them. Leave the bottom 82px clear. */
+  /* Pinned left rather than right. In landscape the detail card keeps the
+     desktop's top-anchored shape (there is no room for a bottom sheet under
+     a 390px-tall screen), and the right edge is already carrying the zoom
+     stack at the top and the control row at the bottom — a top-right card
+     sat on top of the zoom buttons. Left is empty in this layout. */
+  .territory-panel {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    right: auto;
+    width: 320px;
+    max-height: calc(100% - 94px);
+  }
+  /* Each popup opens upward from `bottom: 100% + 8px` of its toggle, so its
+     height is measured from ~80px above the map's bottom edge. Against a
+     390px-tall screen every one of the four ran off the top -- measured at
+     -320px to +80px, i.e. entirely or mostly unreachable. Anchoring to the
+     viewport instead of to the button gives them the whole screen height to
+     work with, and the toggles are 42px here so 54px clears them. */
+  .territory-map-settings-panel {
+    position: fixed;
+    top: auto;
+    left: auto;
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    bottom: calc(54px + env(safe-area-inset-bottom, 0px) + var(--map-keyboard-inset, 0px));
+    max-height: calc(100vh - 74px);
+    max-height: calc(100dvh - 74px);
+    z-index: 30;
+  }
+  /* The desktop cap is min(320px, 100vh - 220px), which at 390px tall
+     resolves to 170px -- about five rows of a leaderboard. This leaves room
+     for the popup's own tabs and padding inside the cap above. */
+  .territory-map-settings-panel-scroll {
+    max-height: calc(100vh - 150px);
+    max-height: calc(100dvh - 150px);
+  }
+  .territory-map-fullscreen { min-height: 300px; }
+}
+
+/* The ?perf=1 readout (MapPerfOverlay in TerritoryMap.jsx). Deliberately
+   plain and out of the way: it is a measuring instrument, not part of the
+   map, and it must not cost a repaint of anything under it — hence its own
+   layer and no backdrop filter. */
+.territory-map-perf {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 30;
+  padding: 6px 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(8, 16, 24, 0.9);
+  color: #cbd5e1;
+  font: 11px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+  pointer-events: none;
+  contain: layout paint;
+}
+
+/* backdrop-filter, on the pages whose content moves under it.
+ *
+ * The touch block above already turns both of these off, for a reason that
+ * turns out not to be about touch at all: the filter re-reads and re-blurs
+ * everything behind the element on every frame its backdrop changes, and on
+ * the war map that is every frame of a pan. .nav is sticky above the map and
+ * .territory-panel is laid over it, so a drag re-blurs both continuously.
+ * Fine-pointer devices were left with the frosted look because the cost was
+ * assumed to be a software-rasterization problem; it is not. Firefox pays it
+ * with hardware acceleration on, and it is charged outside the canvas — which
+ * is why hiding the tiles, the routes, the labels, or the entire canvas made
+ * no difference to it.
+ *
+ * The war map was the first page to hit this, but nothing about it is special:
+ * "content moves under the sticky nav" is just as true of a long scroll as of
+ * a pan. Members (a hundred-plus cards), Leaderboard (a hundred-plus rows) and
+ * Lootpools (several hundred reward rows) are the site's three long pages, and
+ * on all three the whole document slides under .nav for the entire length of a
+ * scroll — so every scroll frame re-blurs the strip, which is what makes those
+ * three feel heavy on a software rasterizer and in Firefox specifically.
+ *
+ * Still scoped rather than removed site-wide: the short pages (Home, Login,
+ * Privacy, the admin screens) barely scroll, so they pay it once and keep the
+ * frosted look on a mouse.
+ */
+body.war-map-page .nav,
+body.members-page .nav,
+body.leaderboard-page .nav,
+body.loot-pools-page .nav {
+  background: #0a0d14;
+  backdrop-filter: none;
+}
+body.war-map-page .territory-panel {
+  background: #0a101a;
+  backdrop-filter: none;
+}

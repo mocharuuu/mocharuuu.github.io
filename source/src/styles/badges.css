@@ -1,0 +1,34 @@
+/* ---------- badges / bits ---------- */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.badge.staff { background: rgba(217, 180, 91, 0.14); color: var(--gold); border: 1px solid rgba(217, 180, 91, 0.35); }
+.badge.online { background: rgba(46, 204, 113, 0.15); color: var(--green); }
+.badge.leave { background: rgba(152, 161, 181, 0.15); color: var(--muted); }
+.badge.warn { background: rgba(143, 29, 52, 0.22); color: #ff8a6a; border: 1px solid rgba(143, 29, 52, 0.55); }
+/* A problem that has since stopped (e.g. loop failures older than an hour on
+   the metrics page): still worth seeing, no longer an alert. */
+.badge.past { background: rgba(217, 180, 91, 0.14); color: var(--gold); border: 1px solid rgba(217, 180, 91, 0.35); }
+.badge.guaranteed { background: rgba(46, 204, 113, 0.15); color: var(--green); border: 1px solid rgba(46, 204, 113, 0.35); margin-left: 4px; }
+
+.unlinked-card { border-color: rgba(231, 76, 60, 0.4); }
+
+/* Access tiers on the site-admin Users page. Each tier gets its own hue so a
+   glance down the column reads as a hierarchy rather than a list: orange (the
+   site's own accent) for site admins, the same gold .badge.staff already uses
+   for staff, teal for the Royal Engineers' metrics-only login, and plain muted
+   for a rank-and-file member. */
+.badge.tier-admin {
+  background: rgba(240, 81, 38, 0.14); color: var(--orange-2);
+  border: 1px solid rgba(240, 81, 38, 0.4);
+}
+.badge.tier-staff {
+  background: rgba(217, 180, 91, 0.14); color: var(--gold);
+  border: 1px solid rgba(217, 180, 91, 0.35);
+}
+.badge.tier-engineer {
+  background: rgba(46, 196, 214, 0.13); color: var(--teal);
+  border: 1px solid rgba(46, 196, 214, 0.35);
+}
+.badge.tier-member {
+  background: rgba(152, 161, 181, 0.15); color: var(--muted);
+  border: 1px solid rgba(152, 161, 181, 0.3);
+}

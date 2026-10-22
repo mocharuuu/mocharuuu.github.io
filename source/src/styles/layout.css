@@ -1,0 +1,28 @@
+/* ---------- layout ---------- */
+.container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 28px 18px 60px; flex: 1; }
+
+.page-head { margin-bottom: 24px; }
+/* Only present when PageHead gets an `actions` prop — title and controls
+   on the same row instead of the title sitting alone above a separate
+   toolbar. No justify-content here on purpose: the title and its actions
+   are direct flex children, so a caller pins any one of them to the row's
+   far edge with its own `margin-left: auto` rather than this rule forcing
+   one fixed distribution on every possible set of actions. */
+.page-head-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.page-head-row .h1 { margin: 0; }
+/* Only present when PageHead gets a `below` prop — a second row under the
+   title/actions row, for a control that reads better on its own line. Flex
+   so multiple controls (e.g. Lootpools' toggle + countdown) share the row
+   instead of stacking, with the same margin-left:auto convention as
+   page-head-row for pinning one to the far edge. */
+.page-head-below { margin-top: 12px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.h1 {
+  font-family: var(--serif); font-variant: small-caps; letter-spacing: 1px;
+  font-size: 32px; font-weight: 700; margin: 0 0 4px;
+}
+.sub { color: var(--muted); margin: 0; }
+.rule {
+  height: 1px; margin-top: 14px; border: 0;
+  background: linear-gradient(90deg, var(--gold), rgba(217, 180, 91, 0.15) 55%, transparent);
+  opacity: 0.6;
+}
