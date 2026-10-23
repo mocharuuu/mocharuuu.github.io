@@ -90,7 +90,7 @@ const bundle = await rollup({
 const { output } = await bundle.write({
   dir: path.join(OUT, "assets"),
   format: "es",
-  entryFileNames: "members-[hash].js",
+  entryFileNames: "tree-[hash].js",
   chunkFileNames: "chunk-[hash].js",
 });
 await bundle.close();
@@ -101,7 +101,7 @@ if (!entry) throw new Error("rollup produced no entry chunk");
 // Hash the stylesheet the same way so it can be cached just as hard.
 const { createHash } = await import("node:crypto");
 const cssHash = createHash("sha256").update(cssText).digest("hex").slice(0, 8);
-const cssName = `members-${cssHash}.css`;
+const cssName = `tree-${cssHash}.css`;
 fs.writeFileSync(path.join(OUT, "assets", cssName), cssText);
 
 // public/ ships at the site root: ui.jsx loads /crest.webp and the favicon
@@ -116,12 +116,12 @@ fs.writeFileSync(path.join(OUT, "index.html"), `<!doctype html>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0d14" />
-    <meta name="description" content="Kingdom of Foxes \u2014 guild roster." />
+    <meta name="description" content="Kingdom of Foxes \u2014 family tree of the houses." />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="preconnect" href="https://kingdomfoxes.com" />
     <link rel="preconnect" href="https://mc-heads.net" />
     <link rel="stylesheet" href="/assets/${cssName}" />
-    <title>Members \u00b7 Kingdom of Foxes</title>
+    <title>Family Tree \u00b7 Kingdom of Foxes</title>
   </head>
   <body>
     <div id="root"></div>
