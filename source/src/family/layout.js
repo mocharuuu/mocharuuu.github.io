@@ -101,9 +101,13 @@ export function layout({ people, families, godparents, houses, measure }) {
         anchorY = lane;
       } else {
         const x1 = a.right + GAP, x2 = b.left - GAP;
+        /* The descent to any children leaves from the middle of the bar, so a
+           dissolved marriage that produced children takes its strike off to
+           one side rather than on top of the stem. */
+        const strikeX = kids.length ? x1 + (x2 - x1) * 0.28 : (x1 + x2) / 2;
         marriages.push({
           kind: "bar", x1, x2, y: a.y,
-          strikeAt: { x: (x1 + x2) / 2, y: a.y },
+          strikeAt: { x: strikeX, y: a.y },
           divorced: fam.status === "divorced",
           key: fam.parents.join("+"),
         });
