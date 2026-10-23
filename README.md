@@ -22,8 +22,10 @@ the bundle, so there is nothing to configure and nothing that can fail to load.
 Each person is a card: house-coloured accent, Minecraft player head, in-game
 username, Fox title, and the tree nickname as a quiet fourth line. Heads come
 from `mc-heads.net` by username, loaded in the visitor's browser. Pressing a
-house in the key frames just that house's members and dims the rest; pressing
-it again, or "Everyone", restores the whole tree.
+house in the key frames just that house's members and dims the rest. Clicking
+a person frames their immediate circle — partners, parents, children, siblings
+and anyone on the other end of a godparent link. Double-clicking opens their
+Wynncraft stats page. Pressing "Everyone" restores the whole tree.
 
 Only partners who share children sit side by side; a dissolved marriage is
 routed as its own connector instead, so nobody with two partners reads as one

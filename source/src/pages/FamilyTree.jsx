@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HOUSES, PEOPLE, FAMILIES, GODPARENTS } from "../family/data.js";
 import { layout, estimateWidth, FONT_MINOR, BOX_H, AVATAR } from "../family/layout.js";
 import "../family/family.css";
@@ -23,28 +23,62 @@ export default function FamilyTree() {
     houses: HOUSES, measure: makeMeasure(),
   }), []);
 
-  /* Clicking a house in the key frames just that house: the viewBox narrows to
-     its members' bounding box and everyone else dims. Clicking it again, or
-     "Everyone", returns to the full tree. `null` means no filter; the
-     houseless group is keyed "none" so it does not collide with that. */
+  /* Two independent framings. A house button frames that house; clicking a
+     person frames their immediate circle. Each clears the other, and `null`
+     for both means the whole tree. The houseless group is keyed "none" so it
+     does not collide with the no-filter sentinel. */
   const [focus, setFocus] = useState(null);
+  const [picked, setPicked] = useState(null);
   const houseKey = (h) => h.id ?? "none";
   const personKey = (p) => p.house ?? "none";
 
+  /* A double-click also delivers two clicks, so hold the zoom briefly and
+     drop it if the second click arrives. */
+  const clickTimer = useRef(null);
+  useEffect(() => () => clearTimeout(clickTimer.current), []);
+
+  const onPersonClick = (id) => {
+    clearTimeout(clickTimer.current);
+    clickTimer.current = setTimeout(() => {
+      setFocus(null);
+      setPicked((cur) => (cur === id ? null : id));
+    }, 220);
+  };
+  const onPersonDoubleClick = (person) => {
+    clearTimeout(clickTimer.current);
+    if (!person.username) return;
+    window.open(
+      `https://wynncraft.com/stats/player/${encodeURIComponent(person.username)}`,
+      "_blank", "noopener,noreferrer"
+    );
+  };
+
+  const inFrame = useMemo(() => {
+    if (picked) return g.neighbours.get(picked) || new Set([picked]);
+    return null;
+  }, [picked, g]);
+
   const view = useMemo(() => {
     const full = { x: 0, y: 0, w: g.width, h: g.height };
-    if (focus === null) return full;
-    const members = g.nodes.filter((n) => personKey(n) === focus);
-    if (!members.length) return full;
+    const members = picked
+      ? g.nodes.filter((n) => inFrame.has(n.id))
+      : focus !== null
+        ? g.nodes.filter((n) => personKey(n) === focus)
+        : null;
+    if (!members || !members.length) return full;
     const pad = 70;
     const x1 = Math.max(0, Math.min(...members.map((m) => m.left)) - pad);
     const x2 = Math.min(g.width, Math.max(...members.map((m) => m.right)) + pad);
     const y1 = Math.max(0, Math.min(...members.map((m) => m.top)) - pad);
     const y2 = Math.min(g.height, Math.max(...members.map((m) => m.bottom)) + pad);
     return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
-  }, [focus, g]);
+  }, [focus, picked, inFrame, g]);
 
-  const dim = (p) => (focus !== null && personKey(p) !== focus ? 0.22 : 1);
+  const dim = (p) => {
+    if (picked) return inFrame.has(p.id) ? 1 : 0.18;
+    if (focus !== null) return personKey(p) === focus ? 1 : 0.22;
+    return 1;
+  };
 
   return (
     <div className="family-page">
@@ -52,7 +86,7 @@ export default function FamilyTree() {
         <h1>Family Tree</h1>
         <p>
           Red bars are marriages (struck through where dissolved), blue lines
-          descent, blue-grey lines descent, dashed blue-grey a godparent or an adoption. A dissolved marriage is a dashed connector, struck through. Each card shows the player's head, in-game username and Fox title. Pick a house in the key to frame just its members. Within a generation,
+          descent, blue-grey lines descent, dashed blue-grey a godparent or an adoption. A dissolved marriage is a dashed connector, struck through. Each card shows the player's head, in-game username and Fox title. Pick a house in the key to frame its members; click a person to frame their immediate circle, or double-click to open their Wynncraft stats. Within a generation,
           those drawn higher are the older.
         </p>
         <ul className="family-legend">
@@ -62,7 +96,7 @@ export default function FamilyTree() {
                 type="button"
                 className={"family-house-btn" + (focus === houseKey(h) ? " is-active" : "")}
                 aria-pressed={focus === houseKey(h)}
-                onClick={() => setFocus(focus === houseKey(h) ? null : houseKey(h))}
+                onClick={() => { setPicked(null); setFocus(focus === houseKey(h) ? null : houseKey(h)); }}
               >
                 <span className="family-swatch" style={{ background: h.color }} />
                 {h.label}
@@ -72,9 +106,9 @@ export default function FamilyTree() {
           <li>
             <button
               type="button"
-              className={"family-house-btn" + (focus === null ? " is-active" : "")}
-              aria-pressed={focus === null}
-              onClick={() => setFocus(null)}
+              className={"family-house-btn" + (focus === null && !picked ? " is-active" : "")}
+              aria-pressed={focus === null && !picked}
+              onClick={() => { setPicked(null); setFocus(null); }}
             >
               Everyone
             </button>
@@ -88,7 +122,7 @@ export default function FamilyTree() {
           viewBox={`${Math.round(view.x)} ${Math.round(view.y)} ${Math.round(view.w)} ${Math.round(view.h)}`}
           width={Math.round(view.w)} height={Math.round(view.h)}
           preserveAspectRatio="xMidYMid meet"
-          style={focus !== null ? { minWidth: 0 } : undefined}
+          style={focus !== null || picked ? { minWidth: 0 } : undefined}
           role="img" aria-label="Kingdom of Foxes family tree"
         >
           {g.descents.map((s) => (
@@ -139,7 +173,18 @@ export default function FamilyTree() {
 
           {g.nodes.map((p) => (
             p.boxed ? (
-              <g key={p.id} opacity={dim(p)}>
+              <g key={p.id} opacity={dim(p)} style={{ cursor: "pointer" }}
+                 role="button" tabIndex={0}
+                 onClick={() => onPersonClick(p.id)}
+                 onDoubleClick={() => onPersonDoubleClick(p)}
+                 onKeyDown={(e) => {
+                   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPersonClick(p.id); }
+                 }}>
+                <title>
+                  {p.username
+                    ? `${p.username} — ${p.title || "no title"}. Click to frame their circle, double-click for Wynncraft stats.`
+                    : `${p.name} — no username on record.`}
+                </title>
                 <rect x={p.left} y={p.top} width={p.w} height={p.h} rx="8" ry="8"
                       fill="#141a26" stroke="#263145" strokeWidth="1.5" />
                 {/* Left accent in the house colour, as on the site's roster cards. */}

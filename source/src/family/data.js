@@ -40,7 +40,7 @@ export const PEOPLE = [
   { id: "calder_m2",   name: "male calder",   house: "calder",   col: 7.8, row: 2, minor: true },
   { id: "unknown_2",   name: "Unknown",       house: "calder",   col: 9.2, row: 2, minor: true },
   { id: "borky",  name: "Borky",  house: "lorcan",  col: 21.0, row: 2, username: "Borkyy", title: "Sir" },
-  { id: "tom",    name: "Tom",    house: "lorcan",  col: 19.8, row: 2, username: "Tooly", title: "Lord" },
+  { id: "tom",    name: "Tom",    house: "lorcan",  col: 19.8, row: 2, username: "ToolyTom", title: "Lord" },
   { id: "spase",  name: "Spase",  house: "everton", col: 13.2, row: 2, username: "SpaseCow", title: "King" },
   { id: "apollo", name: "Apollo", house: "everton", col: 12.0, row: 2, title: "Deceased" },
   { id: "rob",    name: "Rob",    house: "everton", col: 14.4, row: 2, username: "Robturne", title: "Prince" },

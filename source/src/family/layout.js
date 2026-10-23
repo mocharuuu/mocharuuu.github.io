@@ -172,6 +172,24 @@ export function layout({ people, families, godparents, houses, measure }) {
     laneSlot += 1;
   }
 
+  /* Who counts as someone's immediate circle, for the single-click zoom:
+     partners, parents, children, siblings, and anyone on the other end of a
+     godparent link. Not cousins, not grandparents — the point is a tight
+     frame around one person's own household. */
+  const neighbours = new Map(people.map((p) => [p.id, new Set([p.id])]));
+  const link = (a, b) => {
+    if (!neighbours.has(a) || !neighbours.has(b) || a === b) return;
+    neighbours.get(a).add(b);
+    neighbours.get(b).add(a);
+  };
+  for (const fam of families) {
+    const ps = fam.parents, ks = fam.children || [];
+    for (const a of ps) for (const b of ps) link(a, b);
+    for (const a of ps) for (const k of ks) link(a, k);
+    for (const a of ks) for (const b of ks) link(a, b);
+  }
+  for (const g of godparents) link(g.person, g.child);
+
   /* No enclosing outlines: a box drawn round one house's members inevitably
      encloses people from another, which is what made the first draft hard to
      read. Houses are carried by name colour plus the legend instead. */
@@ -184,6 +202,7 @@ export function layout({ people, families, godparents, houses, measure }) {
     laneBottom: laneY + Math.max(0, godparents.length - 1) * 26,
     nodes: [...byId.values()],
     marriages, descents, godLinks, adoptions, legend,
+    neighbours,
   };
 }
 
