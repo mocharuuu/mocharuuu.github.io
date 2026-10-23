@@ -57,6 +57,10 @@ export const PEOPLE = [
   { id: "fool",    name: "Fool",    house: null,       col: 4.2, row: 2.8, username: "fooleaten", title: "Lady" },
   { id: "sek",     name: "Sek",     house: "auspects", col: 5.4, row: 2.8, username: "sek3big", title: "Townsperson" },
   { id: "sini",    name: "Sini",    house: "auspects", col: 6.4, row: 2.8, username: "nothesinistrtype", title: "Countx" },
+  // Sitting beyond Lorcan and Yoshima, awaiting the family they will belong to.
+  { id: "mocha", name: "Mocha", house: null, col: 23.3, row: 2.8, username: "mocharuu",  title: "Baroness" },
+  { id: "mango", name: "Mango", house: null, col: 24.5, row: 2.8, username: "trumango",  title: "Sir" },
+  { id: "max",   name: "Max",   house: null, col: 25.9, row: 2.8, username: "Maxkarson", title: "Lord" },
   // ---- generation 3 — younger than Sini's siblings ----------------------
   { id: "choco",   name: "Choco",   house: "calder",   col: 8.6,  row: 3.2, username: "_HotChocolate", title: "Count" },
   { id: "clod",    name: "Clod",    house: "calder",   col: 9.8,  row: 3.2, username: "Clodwad", title: "Count" },
@@ -68,6 +72,9 @@ export const PEOPLE = [
   { id: "leoh",   name: "Leoh",   house: "calder", col: 9.2,  row: 4.2, username: "__Leoh_", title: "Lord" },
   { id: "hyun",   name: "Hyun",   house: null,     col: 10.6, row: 4.2, username: "hyunugii", title: "Lord" },
   { id: "hkiim",  name: "Hkiim",  house: null,     col: 11.8, row: 4.2, username: "hkiim", title: "Madam" },
+  { id: "mail", name: "Mail", house: null, col: 23.3, row: 4.2, username: "MailOrderGF", title: "Madam" },
+  { id: "mima", name: "Mima", house: null, col: 24.5, row: 4.2, username: "Mima_chan",   title: "Madam" },
+  { id: "nano", name: "Nano", house: null, col: 25.7, row: 4.2, username: "Nanoshere",   title: "Sir" },
 ];
 
 /* One or two parents plus their children. Two parents draw the red bar between
@@ -86,6 +93,7 @@ export const FAMILIES = [
   { parents: ["auspects_m1", "calder_f2"], children: ["chalupe", "magnum", "window", "sek", "sini"], rise: 74 },
   { parents: ["calder_m2", "unknown_2"],   children: ["choco"] },
   { parents: ["window", "fool"], children: [] },
+  { parents: ["mocha", "mango"], children: [] },
   { parents: ["tom", "spase"],  children: [], status: "divorced", route: "below" },
   { parents: ["tom", "borky"],  children: ["astral", "quack", "hboom"] },
   { parents: ["apollo", "spase"], children: ["clod"], status: "divorced" },
