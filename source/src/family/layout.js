@@ -2,7 +2,7 @@
  * measurer and it returns the shapes to draw. The browser measures with a
  * canvas context; the offline preview script uses an estimator. */
 
-export const COL = 180;        // horizontal grid unit
+export const COL = 200;        // horizontal grid unit
 export const ROW = 215;        // vertical grid unit (one generation)
 export const PAD_X = 120;      // margin either side
 export const PAD_TOP = 96;     // room for the house captions
@@ -16,7 +16,7 @@ const HOUSE_PAD_Y = 22;
 export const FONT_MAJOR = 26;
 /* Named people are drawn as cards carrying a player head, username and Fox
    title; unnamed placeholder ancestors stay as bare small text. */
-export const BOX_W = 158;
+export const BOX_W = 176;
 export const BOX_H = 76;
 export const AVATAR = 30;
 export const FONT_MINOR = 13;
@@ -54,9 +54,18 @@ export function layout({ people, families, godparents, houses, measure }) {
     const h = boxed ? BOX_H : fs * 1.15;
     const x = PAD_X + (p.col - 1) * COL;
     const y = PAD_TOP + p.row * ROW;
+    /* Usernames vary a lot in length; shrink the long ones to fit the card
+       rather than letting them run past its edge. */
+    let userFs = 15;
+    if (boxed) {
+      const label = p.username || p.name;
+      const avail = BOX_W - 46 - 10;
+      const wpx = measure(label, 15);
+      if (wpx > avail) userFs = Math.max(9.5, (15 * avail) / wpx);
+    }
     const house = houses.find((hh) => (hh.id ?? null) === (p.house ?? null));
     byId.set(p.id, {
-      ...p, x, y, w, h, fs, boxed, color: house ? house.color : "#f2f5fa",
+      ...p, x, y, w, h, fs, boxed, userFs, color: house ? house.color : "#f2f5fa",
       left: x - w / 2, right: x + w / 2,
       top: y - h / 2, bottom: y + h / 2,
     });

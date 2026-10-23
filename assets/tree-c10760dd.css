@@ -3420,7 +3420,28 @@ body.war-map-page .territory-panel {
   font-size: 13px;
   color: #c3ccdb;
 }
-.family-legend li { display: flex; align-items: center; gap: 7px; }
+.family-legend li { display: flex; }
+
+/* Each key entry is a button: pressing it frames that house in the diagram. */
+.family-house-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 3px 9px;
+  color: #c3ccdb;
+  font: inherit;
+  cursor: pointer;
+}
+.family-house-btn:hover { background: #18202e; border-color: #26324a; }
+.family-house-btn.is-active {
+  background: #1b2435;
+  border-color: #3a4a68;
+  color: #eef2f8;
+}
+.family-house-btn:focus-visible { outline: 2px solid #7e95ad; outline-offset: 1px; }
 .family-swatch {
   width: 13px; height: 13px; border-radius: 3px;
   display: inline-block; flex: none;

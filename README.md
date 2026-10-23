@@ -19,6 +19,12 @@ the bundle, so there is nothing to configure and nothing that can fail to load.
 | Name colour | house (see the key above the tree) |
 | Higher within a generation | older |
 
+Each person is a card: house-coloured accent, Minecraft player head, in-game
+username, Fox title, and the tree nickname as a quiet fourth line. Heads come
+from `mc-heads.net` by username, loaded in the visitor's browser. Pressing a
+house in the key frames just that house's members and dims the rest; pressing
+it again, or "Everyone", restores the whole tree.
+
 Only partners who share children sit side by side; a dissolved marriage is
 routed as its own connector instead, so nobody with two partners reads as one
 four-way union. Someone drawn in grey married or was adopted into the tree
@@ -30,7 +36,9 @@ from the original drawings.
 Everything lives in [`source/src/family/data.js`](source/src/family/data.js) —
 `HOUSES`, `PEOPLE`, `FAMILIES` and `GODPARENTS`. To add a person, add one entry
 to `PEOPLE` with a `col` (horizontal slot) and `row` (generation), then wire
-them into a `FAMILIES` entry. Columns and rows are grid units rather than
+them into a `FAMILIES` entry. Add `username` and `title` to give them a head
+and a rank on their card; without a username the card falls back to the
+nickname and an em-dash. Columns and rows are grid units rather than
 pixels; `layout.js` turns them into coordinates, draws the bars and routes the
 links. Spouses need adjacent `col` values so the marriage bar lands between
 their names.
@@ -44,6 +52,7 @@ children sit a little above Choco: they are older, and both are below Spase.
     npm install
     node build.mjs       # writes dist/ — copy its contents to the repo root
     node preview.mjs     # optional: renders preview.svg to check geometry
+    node checkfocus.mjs  # optional: prints each house's zoom frame
 
 `build.mjs` uses `@rollup/wasm-node` with Babel rather than Vite. Vite's
 bundler, esbuild and esbuild-wasm all run their compiler as a spawned child

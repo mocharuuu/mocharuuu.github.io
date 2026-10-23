@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { HOUSES, PEOPLE, FAMILIES, GODPARENTS } from "../family/data.js";
 import { layout, estimateWidth, FONT_MINOR, BOX_H, AVATAR } from "../family/layout.js";
 import "../family/family.css";
@@ -23,30 +23,72 @@ export default function FamilyTree() {
     houses: HOUSES, measure: makeMeasure(),
   }), []);
 
+  /* Clicking a house in the key frames just that house: the viewBox narrows to
+     its members' bounding box and everyone else dims. Clicking it again, or
+     "Everyone", returns to the full tree. `null` means no filter; the
+     houseless group is keyed "none" so it does not collide with that. */
+  const [focus, setFocus] = useState(null);
+  const houseKey = (h) => h.id ?? "none";
+  const personKey = (p) => p.house ?? "none";
+
+  const view = useMemo(() => {
+    const full = { x: 0, y: 0, w: g.width, h: g.height };
+    if (focus === null) return full;
+    const members = g.nodes.filter((n) => personKey(n) === focus);
+    if (!members.length) return full;
+    const pad = 70;
+    const x1 = Math.max(0, Math.min(...members.map((m) => m.left)) - pad);
+    const x2 = Math.min(g.width, Math.max(...members.map((m) => m.right)) + pad);
+    const y1 = Math.max(0, Math.min(...members.map((m) => m.top)) - pad);
+    const y2 = Math.min(g.height, Math.max(...members.map((m) => m.bottom)) + pad);
+    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+  }, [focus, g]);
+
+  const dim = (p) => (focus !== null && personKey(p) !== focus ? 0.22 : 1);
+
   return (
     <div className="family-page">
       <header className="family-head">
         <h1>Family Tree</h1>
         <p>
           Red bars are marriages (struck through where dissolved), blue lines
-          descent, blue-grey lines descent, dashed blue-grey a godparent or an adoption. A dissolved marriage is a dashed connector, struck through. Each card shows the player's head, in-game username and Fox title. Within a generation,
+          descent, blue-grey lines descent, dashed blue-grey a godparent or an adoption. A dissolved marriage is a dashed connector, struck through. Each card shows the player's head, in-game username and Fox title. Pick a house in the key to frame just its members. Within a generation,
           those drawn higher are the older.
         </p>
         <ul className="family-legend">
           {g.legend.map((h) => (
             <li key={h.id || "none"}>
-              <span className="family-swatch" style={{ background: h.color }} />
-              {h.label}
+              <button
+                type="button"
+                className={"family-house-btn" + (focus === houseKey(h) ? " is-active" : "")}
+                aria-pressed={focus === houseKey(h)}
+                onClick={() => setFocus(focus === houseKey(h) ? null : houseKey(h))}
+              >
+                <span className="family-swatch" style={{ background: h.color }} />
+                {h.label}
+              </button>
             </li>
           ))}
+          <li>
+            <button
+              type="button"
+              className={"family-house-btn" + (focus === null ? " is-active" : "")}
+              aria-pressed={focus === null}
+              onClick={() => setFocus(null)}
+            >
+              Everyone
+            </button>
+          </li>
         </ul>
       </header>
 
       <div className="family-scroll">
         <svg
           className="family-svg"
-          viewBox={`0 0 ${Math.round(g.width)} ${Math.round(g.height)}`}
-          width={Math.round(g.width)} height={Math.round(g.height)}
+          viewBox={`${Math.round(view.x)} ${Math.round(view.y)} ${Math.round(view.w)} ${Math.round(view.h)}`}
+          width={Math.round(view.w)} height={Math.round(view.h)}
+          preserveAspectRatio="xMidYMid meet"
+          style={focus !== null ? { minWidth: 0 } : undefined}
           role="img" aria-label="Kingdom of Foxes family tree"
         >
           {g.descents.map((s) => (
@@ -97,7 +139,7 @@ export default function FamilyTree() {
 
           {g.nodes.map((p) => (
             p.boxed ? (
-              <g key={p.id}>
+              <g key={p.id} opacity={dim(p)}>
                 <rect x={p.left} y={p.top} width={p.w} height={p.h} rx="8" ry="8"
                       fill="#141a26" stroke="#263145" strokeWidth="1.5" />
                 {/* Left accent in the house colour, as on the site's roster cards. */}
@@ -113,9 +155,9 @@ export default function FamilyTree() {
                          x={p.left + 13} y={p.top + 10}
                          width={AVATAR} height={AVATAR} />
                 )}
-                <text className="family-user" x={p.left + 50} y={p.top + 25}
-                      fill={p.color}>{p.username || p.name}</text>
-                <text className="family-title" x={p.left + 50} y={p.top + 43}
+                <text className="family-user" x={p.left + 46} y={p.top + 25}
+                      fontSize={p.userFs} fill={p.color}>{p.username || p.name}</text>
+                <text className="family-title" x={p.left + 46} y={p.top + 44}
                       fill={p.color}>{p.title || "\u2014"}</text>
                 {p.username && (
                   <text className="family-nick" x={p.left + 13} y={p.top + BOX_H - 12}>
@@ -125,7 +167,7 @@ export default function FamilyTree() {
               </g>
             ) : (
               <text key={p.id} x={p.x} y={p.y} textAnchor="middle"
-                    dominantBaseline="middle" fill={p.color}
+                    dominantBaseline="middle" fill={p.color} opacity={dim(p)}
                     className="family-name family-name-minor"
                     fontSize={FONT_MINOR}>
                 {p.name}

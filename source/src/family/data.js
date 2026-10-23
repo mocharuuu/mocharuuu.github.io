@@ -29,7 +29,7 @@ export const PEOPLE = [
   // ---- generation 1 ----------------------------------------------------
   { id: "calder_m1",   name: "male calder",    house: "calder",  col: 5.4,  row: 1, minor: true },
   { id: "unknown_1",   name: "Unknown",        house: "calder",  col: 6.8,  row: 1, minor: true },
-  { id: "neon",        name: "Neon",           house: "lorcan",  col: 20.4, row: 1 },
+  { id: "neon",        name: "Neon",           house: "lorcan",  col: 20.4, row: 1, username: "NeonRider", title: "Baron" },
   { id: "matriarch_1", name: "some matriarch", house: "everton", col: 14.4, row: 1, minor: true },
   { id: "matriarch_2", name: "some matriarch", house: "everton", col: 16.8, row: 1, minor: true },
   { id: "matriarch_3", name: "some matriarch", house: "everton", col: 18.0, row: 1, minor: true },
@@ -40,32 +40,32 @@ export const PEOPLE = [
   { id: "calder_m2",   name: "male calder",   house: "calder",   col: 7.8, row: 2, minor: true },
   { id: "unknown_2",   name: "Unknown",       house: "calder",   col: 9.2, row: 2, minor: true },
   { id: "borky",  name: "Borky",  house: "lorcan",  col: 21.0, row: 2 },
-  { id: "tom",    name: "Tom",    house: "lorcan",  col: 19.8, row: 2, username: "ToolyTom", title: "Lord" },
+  { id: "tom",    name: "Tom",    house: "lorcan",  col: 19.8, row: 2, username: "Tooly", title: "Lord" },
   { id: "spase",  name: "Spase",  house: "everton", col: 13.2, row: 2, username: "SpaseCow", title: "King" },
   { id: "apollo", name: "Apollo", house: "everton", col: 12.0, row: 2 },
   { id: "rob",    name: "Rob",    house: "everton", col: 14.4, row: 2, username: "Robturne", title: "Prince" },
-  { id: "salty",  name: "Salty",  house: "everton", col: 15.6, row: 2 },
-  { id: "pho",    name: "Pho",    house: "everton", col: 16.8, row: 2 },
+  { id: "salty",  name: "Salty",  house: "everton", col: 15.6, row: 2, username: "SaltyKing", title: "Viceroy" },
+  { id: "pho",    name: "Pho",    house: "everton", col: 16.8, row: 2, username: "photor320", title: "Archduke" },
   { id: "viri",   name: "Viri",   house: "everton", col: 18.0, row: 2 },
   // Jake has no recorded tie to anyone else: Viri's generation, unconnected.
-  { id: "jake",   name: "Jake",   house: "yoshima", col: 22.5, row: 2 },
+  { id: "jake",   name: "Jake",   house: "yoshima", col: 22.5, row: 2, username: "Jake70", title: "Marquis" },
 
   // ---- generation 3 — the Auspects children are the older half ----------
-  { id: "chalupe", name: "Chalup\u00e9", house: "auspects", col: 1.0, row: 2.8 },
+  { id: "chalupe", name: "Chalup\u00e9", house: "auspects", col: 1.0, row: 2.8, username: "chalupe", title: "Lord" },
   { id: "magnum",  name: "Magnum",  house: "auspects", col: 2.0, row: 2.8 },
-  { id: "window",  name: "Window",  house: "auspects", col: 3.0, row: 2.8 },
-  { id: "fool",    name: "Fool",    house: null,       col: 4.2, row: 2.8 },
+  { id: "window",  name: "Window",  house: "auspects", col: 3.0, row: 2.8, username: "Window991", title: "Lord" },
+  { id: "fool",    name: "Fool",    house: null,       col: 4.2, row: 2.8, username: "fooleaten", title: "Lady" },
   { id: "sek",     name: "Sek",     house: "auspects", col: 5.4, row: 2.8 },
-  { id: "sini",    name: "Sini",    house: "auspects", col: 6.4, row: 2.8 },
+  { id: "sini",    name: "Sini",    house: "auspects", col: 6.4, row: 2.8, username: "nothesinistrtype", title: "Countx" },
   // ---- generation 3 — younger than Sini's siblings ----------------------
-  { id: "choco",   name: "Choco",   house: "calder",   col: 8.6,  row: 3.2 },
-  { id: "clod",    name: "Clod",    house: "calder",   col: 9.8,  row: 3.2 },
-  { id: "astral",  name: "Astral",  house: "lorcan",   col: 19.2, row: 3.2 },
+  { id: "choco",   name: "Choco",   house: "calder",   col: 8.6,  row: 3.2, username: "_HotChocolate", title: "Count" },
+  { id: "clod",    name: "Clod",    house: "calder",   col: 9.8,  row: 3.2, username: "Clodwad", title: "Count" },
+  { id: "astral",  name: "Astral",  house: "lorcan",   col: 19.2, row: 3.2, username: "Astral_Heart", title: "Lord" },
   { id: "quack",   name: "Quack",   house: "lorcan",   col: 20.4, row: 3.2 },
   { id: "hboom",   name: "Hboom",   house: "lorcan",   col: 21.6, row: 3.2 },
 
   // ---- generation 4 ----------------------------------------------------
-  { id: "leoh",   name: "Leoh",   house: "calder", col: 9.2,  row: 4.2 },
+  { id: "leoh",   name: "Leoh",   house: "calder", col: 9.2,  row: 4.2, username: "__Leoh_", title: "Lord" },
   { id: "hyun",   name: "Hyun",   house: null,     col: 10.6, row: 4.2 },
   { id: "hkiim",  name: "Hkiim",  house: null,     col: 11.8, row: 4.2 },
 ];

@@ -43,8 +43,8 @@ for (const p of g.nodes) {
   out.push(`<rect x="${p.left}" y="${p.top}" width="${p.w}" height="${p.h}" rx="8" fill="#141a26" stroke="#263145" stroke-width="1.5"/>`);
   out.push(`<rect x="${p.left}" y="${p.top}" width="4" height="${p.h}" rx="2" fill="${p.color}"/>`);
   out.push(`<rect x="${p.left + 13}" y="${p.top + 10}" width="${AVATAR}" height="${AVATAR}" rx="3" fill="#20293a"/>`);
-  out.push(`<text x="${p.left + 50}" y="${p.top + 25}" fill="${p.color}" style="font:${F(15)}">${esc(p.username || p.name)}</text>`);
-  out.push(`<text x="${p.left + 50}" y="${p.top + 43}" fill="${p.color}" style="font:700 12.5px 'DejaVu Sans', sans-serif">${esc(p.title || "\u2014")}</text>`);
+  out.push(`<text x="${p.left + 46}" y="${p.top + 25}" fill="${p.color}" style="font:${F(p.userFs)}">${esc(p.username || p.name)}</text>`);
+  out.push(`<text x="${p.left + 46}" y="${p.top + 44}" fill="${p.color}" style="font:700 12.5px 'DejaVu Sans', sans-serif">${esc(p.title || "\u2014")}</text>`);
   if (p.username) out.push(`<text x="${p.left + 13}" y="${p.top + BOX_H - 12}" fill="#8893a6" style="font:600 11px 'DejaVu Sans', sans-serif">${esc(p.name)}</text>`);
 }
 out.push("</svg>");
