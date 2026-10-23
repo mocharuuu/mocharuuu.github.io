@@ -29,7 +29,7 @@ export default function FamilyTree() {
         <h1>Family Tree</h1>
         <p>
           Red bars are marriages (struck through where dissolved), blue lines
-          descent, dashed blue a godparent or an adoption. Within a generation,
+          descent, dashed blue a godparent or an adoption. A dissolved marriage is a dashed red connector, struck through. Within a generation,
           those drawn higher are the older.
         </p>
         <ul className="family-legend">
@@ -73,21 +73,25 @@ export default function FamilyTree() {
 
           {g.marriages.map((m) => (
             <g key={m.key}>
-              <path d={`M ${m.x1} ${m.y} L ${m.x2} ${m.y}`}
-                    stroke="#e4121b" strokeWidth="6" strokeLinecap="round" />
-              {/* A dissolved marriage keeps its bar and is struck through,
-                  the usual genealogical mark for a divorce. */}
-              {m.divorced && (() => {
-                const mid = (m.x1 + m.x2) / 2;
-                return (
-                  <>
-                    <path d={`M ${mid - 11} ${m.y + 12} L ${mid - 1} ${m.y - 12}`}
-                          stroke="#e4121b" strokeWidth="5" strokeLinecap="round" />
-                    <path d={`M ${mid + 1} ${m.y + 12} L ${mid + 11} ${m.y - 12}`}
-                          stroke="#e4121b" strokeWidth="5" strokeLinecap="round" />
-                  </>
-                );
-              })()}
+              {m.kind === "path"
+                ? <path d={m.d} fill="none" stroke="#e4121b" strokeWidth="6"
+                        strokeLinecap="round" strokeDasharray="16 10" />
+                : <path d={`M ${m.x1} ${m.y} L ${m.x2} ${m.y}`}
+                        stroke="#e4121b" strokeWidth="6" strokeLinecap="round" />}
+              {/* A dissolved marriage keeps its connector and is struck
+                  through, the usual genealogical mark for a divorce. */}
+              {m.divorced && (
+                <>
+                  <path d={`M ${m.strikeAt.x - 11} ${m.strikeAt.y + 12} L ${m.strikeAt.x - 1} ${m.strikeAt.y - 12}`}
+                        stroke="#e4121b" strokeWidth="5" strokeLinecap="round" />
+                  <path d={`M ${m.strikeAt.x + 1} ${m.strikeAt.y + 12} L ${m.strikeAt.x + 11} ${m.strikeAt.y - 12}`}
+                        stroke="#e4121b" strokeWidth="5" strokeLinecap="round" />
+                </>
+              )}
+              {m.labelAt && m.divorced && (
+                <text className="family-role family-divorced" x={m.labelAt.x}
+                      y={m.labelAt.y} textAnchor="middle">divorced</text>
+              )}
             </g>
           ))}
 

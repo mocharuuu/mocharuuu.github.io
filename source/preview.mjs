@@ -23,11 +23,16 @@ for (const s of g.godLinks) {
   out.push(`<text x="${s.labelAt.x}" y="${s.labelAt.y}" text-anchor="middle" fill="#9fd4ea" style="font:${F(12)}">${esc(s.role)}</text>`);
 }
 for (const m of g.marriages) {
-  out.push(`<path d="M ${m.x1} ${m.y} L ${m.x2} ${m.y}" stroke="#e4121b" stroke-width="6" stroke-linecap="round"/>`);
+  if (m.kind === "path") {
+    out.push(`<path d="${m.d}" fill="none" stroke="#e4121b" stroke-width="6" stroke-linecap="round" stroke-dasharray="16 10"/>`);
+  } else {
+    out.push(`<path d="M ${m.x1} ${m.y} L ${m.x2} ${m.y}" stroke="#e4121b" stroke-width="6" stroke-linecap="round"/>`);
+  }
   if (m.divorced) {
-    const mid = (m.x1 + m.x2) / 2;
-    out.push(`<path d="M ${mid - 11} ${m.y + 12} L ${mid - 1} ${m.y - 12}" stroke="#e4121b" stroke-width="5" stroke-linecap="round"/>`);
-    out.push(`<path d="M ${mid + 1} ${m.y + 12} L ${mid + 11} ${m.y - 12}" stroke="#e4121b" stroke-width="5" stroke-linecap="round"/>`);
+    const s = m.strikeAt;
+    out.push(`<path d="M ${s.x - 11} ${s.y + 12} L ${s.x - 1} ${s.y - 12}" stroke="#e4121b" stroke-width="5" stroke-linecap="round"/>`);
+    out.push(`<path d="M ${s.x + 1} ${s.y + 12} L ${s.x + 11} ${s.y - 12}" stroke="#e4121b" stroke-width="5" stroke-linecap="round"/>`);
+    if (m.labelAt) out.push(`<text x="${m.labelAt.x}" y="${m.labelAt.y}" text-anchor="middle" fill="#f08a8f" style="font:${F(12)}">divorced</text>`);
   }
 }
 for (const p of g.nodes) {

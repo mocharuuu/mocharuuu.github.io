@@ -3426,3 +3426,5 @@ body.war-map-page .territory-panel {
   display: inline-block; flex: none;
 }
 
+.family-divorced { fill: #f08a8f; }
+

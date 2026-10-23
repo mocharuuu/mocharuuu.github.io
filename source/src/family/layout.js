@@ -68,13 +68,33 @@ export function layout({ people, families, godparents, houses, measure }) {
     let anchorX, anchorY;
     if (parents.length === 2) {
       const [a, b] = parents.slice().sort((p, q) => p.x - q.x);
-      const x1 = a.right + GAP, x2 = b.left - GAP;
-      marriages.push({
-        x1, x2, y: a.y, divorced: fam.status === "divorced",
-        key: fam.parents.join("+"),
-      });
-      anchorX = (x1 + x2) / 2;
-      anchorY = a.y;
+      if (fam.route === "below") {
+        /* A couple who are not side by side: their bar becomes a connector
+           routed through the gap under their row. This is what keeps a person
+           with two partners from reading as one four-way union — only the
+           partners who share children stay adjacent. */
+        const lane = Math.max(a.bottom, b.bottom) + 42;
+        marriages.push({
+          kind: "path",
+          d: orthPath([[a.x, a.bottom], [a.x, lane], [b.x, lane], [b.x, b.bottom]]),
+          strikeAt: { x: (a.x + b.x) / 2, y: lane },
+          labelAt: { x: (a.x + b.x) / 2, y: lane + 20 },
+          divorced: fam.status === "divorced",
+          key: fam.parents.join("+"),
+        });
+        anchorX = (a.x + b.x) / 2;
+        anchorY = lane;
+      } else {
+        const x1 = a.right + GAP, x2 = b.left - GAP;
+        marriages.push({
+          kind: "bar", x1, x2, y: a.y,
+          strikeAt: { x: (x1 + x2) / 2, y: a.y },
+          divorced: fam.status === "divorced",
+          key: fam.parents.join("+"),
+        });
+        anchorX = (x1 + x2) / 2;
+        anchorY = a.y;
+      }
     } else {
       anchorX = parents[0].x;
       anchorY = parents[0].bottom;

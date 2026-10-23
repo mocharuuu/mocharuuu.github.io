@@ -13,14 +13,16 @@ the bundle, so there is nothing to configure and nothing that can fail to load.
 | Mark | Meaning |
 |---|---|
 | Red bar between two names | marriage |
-| Red bar struck through | dissolved marriage |
+| Dashed red connector, struck through | dissolved marriage |
 | Blue lines | descent, parents down to children |
 | Dashed blue, labelled | godparent, or an adoption |
 | Name colour | house (see the key above the tree) |
 | Higher within a generation | older |
 
-Someone drawn in grey married or was adopted into the tree without belonging
-to a house. Small grey labels are unnamed placeholder ancestors carried over
+Only partners who share children sit side by side; a dissolved marriage is
+routed as its own connector instead, so nobody with two partners reads as one
+four-way union. Someone drawn in grey married or was adopted into the tree
+without belonging to a house. Small grey labels are unnamed placeholder ancestors carried over
 from the original drawings.
 
 ## Editing the tree

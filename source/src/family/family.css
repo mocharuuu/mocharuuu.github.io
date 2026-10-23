@@ -76,3 +76,5 @@
   width: 13px; height: 13px; border-radius: 3px;
   display: inline-block; flex: none;
 }
+
+.family-divorced { fill: #f08a8f; }

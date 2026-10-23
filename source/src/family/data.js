@@ -24,31 +24,31 @@ export const HOUSES = [
 
 export const PEOPLE = [
   // ---- generation 0 ----------------------------------------------------
-  { id: "higher_matriarch", name: "some higher matriarch", house: "everton", col: 18.4, row: 0, minor: true },
+  { id: "higher_matriarch", name: "some higher matriarch", house: "everton", col: 16.4, row: 0, minor: true },
 
   // ---- generation 1 ----------------------------------------------------
   { id: "calder_m1",   name: "male calder",    house: "calder",  col: 5.4,  row: 1, minor: true },
   { id: "unknown_1",   name: "Unknown",        house: "calder",  col: 6.8,  row: 1, minor: true },
-  { id: "neon",        name: "Neon",           house: "calder",  col: 10.6, row: 1 },
-  { id: "matriarch_1", name: "some matriarch", house: "everton", col: 16.0, row: 1, minor: true },
-  { id: "matriarch_2", name: "some matriarch", house: "everton", col: 19.0, row: 1, minor: true },
-  { id: "matriarch_3", name: "some matriarch", house: "everton", col: 20.2, row: 1, minor: true },
+  { id: "neon",        name: "Neon",           house: "lorcan",  col: 20.4, row: 1 },
+  { id: "matriarch_1", name: "some matriarch", house: "everton", col: 14.4, row: 1, minor: true },
+  { id: "matriarch_2", name: "some matriarch", house: "everton", col: 16.8, row: 1, minor: true },
+  { id: "matriarch_3", name: "some matriarch", house: "everton", col: 18.0, row: 1, minor: true },
 
   // ---- generation 2 ----------------------------------------------------
   { id: "auspects_m1", name: "male auspects", house: "auspects", col: 3.0, row: 2, minor: true },
-  { id: "calder_f2",   name: "famele calder", house: "calder",   col: 4.4, row: 2, minor: true },
+  { id: "calder_f2",   name: "female calder", house: "calder",   col: 4.4, row: 2, minor: true },
   { id: "calder_m2",   name: "male calder",   house: "calder",   col: 7.8, row: 2, minor: true },
   { id: "unknown_2",   name: "Unknown",       house: "calder",   col: 9.2, row: 2, minor: true },
-  { id: "borky",  name: "Borky",  house: "lorcan",  col: 11.8, row: 2 },
-  { id: "tom",    name: "Tom",    house: "lorcan",  col: 13.0, row: 2 },
-  { id: "spase",  name: "Spase",  house: "everton", col: 14.2, row: 2 },
-  { id: "apollo", name: "Apollo", house: "everton", col: 15.4, row: 2 },
-  { id: "rob",    name: "Rob",    house: "everton", col: 16.6, row: 2 },
-  { id: "salty",  name: "Salty",  house: "everton", col: 17.8, row: 2 },
-  { id: "pho",    name: "Pho",    house: "everton", col: 19.0, row: 2 },
-  { id: "viri",   name: "Viri",   house: "everton", col: 20.2, row: 2 },
+  { id: "borky",  name: "Borky",  house: "lorcan",  col: 21.0, row: 2 },
+  { id: "tom",    name: "Tom",    house: "lorcan",  col: 19.8, row: 2 },
+  { id: "spase",  name: "Spase",  house: "everton", col: 13.2, row: 2 },
+  { id: "apollo", name: "Apollo", house: "everton", col: 12.0, row: 2 },
+  { id: "rob",    name: "Rob",    house: "everton", col: 14.4, row: 2 },
+  { id: "salty",  name: "Salty",  house: "everton", col: 15.6, row: 2 },
+  { id: "pho",    name: "Pho",    house: "everton", col: 16.8, row: 2 },
+  { id: "viri",   name: "Viri",   house: "everton", col: 18.0, row: 2 },
   // Jake has no recorded tie to anyone else: Viri's generation, unconnected.
-  { id: "jake",   name: "Jake",   house: "yoshima", col: 21.7, row: 2 },
+  { id: "jake",   name: "Jake",   house: "yoshima", col: 22.5, row: 2 },
 
   // ---- generation 3 — the Auspects children are the older half ----------
   { id: "chalupe", name: "Chalup\u00e9", house: "auspects", col: 1.0, row: 2.88 },
@@ -60,9 +60,9 @@ export const PEOPLE = [
   // ---- generation 3 — younger than Sini's siblings ----------------------
   { id: "choco",   name: "Choco",   house: "calder",   col: 8.6,  row: 3.12 },
   { id: "clod",    name: "Clod",    house: "calder",   col: 9.8,  row: 3.12 },
-  { id: "astral",  name: "Astral",  house: "lorcan",   col: 11.8, row: 3.12 },
-  { id: "quack",   name: "Quack",   house: "lorcan",   col: 13.0, row: 3.12 },
-  { id: "hboom",   name: "Hboom",   house: "lorcan",   col: 14.2, row: 3.12 },
+  { id: "astral",  name: "Astral",  house: "lorcan",   col: 19.2, row: 3.12 },
+  { id: "quack",   name: "Quack",   house: "lorcan",   col: 20.4, row: 3.12 },
+  { id: "hboom",   name: "Hboom",   house: "lorcan",   col: 21.6, row: 3.12 },
 
   // ---- generation 4 ----------------------------------------------------
   { id: "leoh",   name: "Leoh",   house: "calder", col: 9.2,  row: 4.2 },
@@ -86,7 +86,7 @@ export const FAMILIES = [
   { parents: ["auspects_m1", "calder_f2"], children: ["chalupe", "magnum", "window", "sek", "sini"], rise: 74 },
   { parents: ["calder_m2", "unknown_2"],   children: ["choco"] },
   { parents: ["window", "fool"], children: [] },
-  { parents: ["tom", "spase"],  children: [], status: "divorced" },
+  { parents: ["tom", "spase"],  children: [], status: "divorced", route: "below" },
   { parents: ["tom", "borky"],  children: ["astral", "quack", "hboom"] },
   { parents: ["apollo", "spase"], children: ["clod"] },
   { parents: ["choco", "clod"], children: ["leoh"] },
@@ -99,5 +99,4 @@ export const FAMILIES = [
  * `viaCol` is the column the link uses to get down there. */
 export const GODPARENTS = [
   { person: "sini", child: "choco", role: "godmother", viaCol: 7.3 },
-  { person: "neon", child: "choco", role: "godfather", viaCol: 10.6 },
 ];
