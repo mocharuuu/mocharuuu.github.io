@@ -61,9 +61,13 @@ export default function FamilyTree() {
       && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const from = viewRef.current;
     if (reduce) { apply(target); return; }
-    const t0 = performance.now();
+    /* Anchor the tween to the first animation frame rather than to
+       performance.now(): the two only share a time origin by convention, and
+       if they ever diverge the eased value overshoots wildly. */
+    let t0 = null;
     const tick = (now) => {
-      const p = Math.min(1, (now - t0) / TWEEN_MS);
+      if (t0 === null) t0 = now;
+      const p = Math.min(1, Math.max(0, (now - t0) / TWEEN_MS));
       const e = easeInOut(p);
       apply({
         x: lerp(from.x, target.x, e), y: lerp(from.y, target.y, e),
@@ -102,30 +106,43 @@ export default function FamilyTree() {
 
   const reset = () => { setPicked(null); setFocus(null); animateTo(full); };
 
+  /* Pointer capture is taken only once a drag actually begins. Capturing on
+     pointerdown retargets the whole gesture to the <svg>, which is what stopped
+     taps from ever reaching a card. */
   const drag = useRef(null);
+  const panned = useRef(false);
   const unitsPerPixel = () => {
     const box = svgRef.current?.getBoundingClientRect();
     if (!box || !box.width) return 1;
-    // preserveAspectRatio="meet" fits the longer side, so the scale is
-    // whichever axis is the binding constraint.
+    // preserveAspectRatio="meet" fits the binding axis, so the scale is
+    // whichever of the two is the constraint.
     return Math.max(viewRef.current.w / box.width, viewRef.current.h / box.height);
   };
   const onPointerDown = (e) => {
     if (e.button !== 0) return;
     stop();
-    drag.current = { px: e.clientX, py: e.clientY, view: viewRef.current, moved: false };
-    e.currentTarget.setPointerCapture(e.pointerId);
+    panned.current = false;
+    drag.current = {
+      px: e.clientX, py: e.clientY, id: e.pointerId,
+      view: viewRef.current, active: false,
+    };
   };
   const onPointerMove = (e) => {
     const d = drag.current;
     if (!d) return;
+    const dxPx = e.clientX - d.px, dyPx = e.clientY - d.py;
+    if (!d.active) {
+      if (Math.hypot(dxPx, dyPx) < 4) return;   // still a tap, not a drag
+      d.active = true;
+      panned.current = true;
+      try { e.currentTarget.setPointerCapture(d.id); } catch { /* not fatal */ }
+    }
     const k = unitsPerPixel();
-    const dx = (e.clientX - d.px) * k, dy = (e.clientY - d.py) * k;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) d.moved = true;
-    apply(clampView({ ...d.view, x: d.view.x - dx, y: d.view.y - dy }, full));
+    apply(clampView({ ...d.view, x: d.view.x - dxPx * k, y: d.view.y - dyPx * k }, full));
   };
   const onPointerUp = (e) => {
-    if (drag.current) e.currentTarget.releasePointerCapture?.(e.pointerId);
+    const d = drag.current;
+    if (d?.active) { try { e.currentTarget.releasePointerCapture(d.id); } catch { /* ignore */ } }
     drag.current = null;
   };
 
@@ -141,25 +158,43 @@ export default function FamilyTree() {
     }));
   };
 
-  /* A double-click also delivers two clicks, so hold the zoom briefly and
-     drop it if a second click arrives. A click that panned is not a click. */
-  const clickTimer = useRef(null);
-  useEffect(() => () => clearTimeout(clickTimer.current), []);
-  const onPersonClick = (id) => {
-    if (drag.current?.moved) return;
-    clearTimeout(clickTimer.current);
-    clickTimer.current = setTimeout(() => {
-      setFocus(null);
-      setPicked((cur) => (cur === id ? null : id));
-    }, 220);
-  };
-  const onPersonDoubleClick = (person) => {
-    clearTimeout(clickTimer.current);
+  /* Selection is driven from the card's own pointerup rather than synthetic
+     click/dblclick: that works for touch as well as mouse, and does not depend
+     on how the browser retargets events during a drag. A first tap frames the
+     person after a short wait; a second tap on the same card inside that
+     window opens their Wynncraft stats instead. */
+  const tap = useRef({ id: null, at: 0, timer: null });
+  useEffect(() => () => clearTimeout(tap.current.timer), []);
+
+  const openStats = (person) => {
     if (!person.username) return;
     window.open(
       `https://wynncraft.com/stats/player/${encodeURIComponent(person.username)}`,
       "_blank", "noopener,noreferrer"
     );
+  };
+
+  const framePerson = (id) => {
+    setFocus(null);
+    setPicked((cur) => (cur === id ? null : id));
+  };
+
+  const onPersonTap = (person) => {
+    if (panned.current) { panned.current = false; return; }
+    const now = performance.now();
+    const prev = tap.current;
+    if (prev.id === person.id && now - prev.at < 340) {
+      clearTimeout(prev.timer);
+      tap.current = { id: null, at: 0, timer: null };
+      openStats(person);
+      return;
+    }
+    clearTimeout(prev.timer);
+    const timer = setTimeout(() => {
+      tap.current = { id: null, at: 0, timer: null };
+      framePerson(person.id);
+    }, 260);
+    tap.current = { id: person.id, at: now, timer };
   };
 
   const dim = (p) => {
@@ -177,7 +212,7 @@ export default function FamilyTree() {
           lines descent, dashed blue-grey a godparent or an adoption. Within a
           generation, those drawn higher are the older. Pick a house in the key
           to frame its members; click a person to frame their immediate circle,
-          or double-click to open their Wynncraft stats. Drag to pan, scroll or
+          or click twice to open their Wynncraft stats. Drag to pan, scroll or
           use the buttons to zoom.
         </p>
         <ul className="family-legend">
@@ -277,10 +312,10 @@ export default function FamilyTree() {
             p.boxed ? (
               <g key={p.id} opacity={dim(p)} style={{ cursor: "pointer" }}
                  role="button" tabIndex={0}
-                 onClick={() => onPersonClick(p.id)}
-                 onDoubleClick={() => onPersonDoubleClick(p)}
+                 onPointerUp={() => onPersonTap(p)}
                  onKeyDown={(e) => {
-                   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPersonClick(p.id); }
+                   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); framePerson(p.id); }
+                   if (e.key === "s" || e.key === "S") openStats(p);
                  }}>
                 <title>
                   {p.username

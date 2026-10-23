@@ -61,6 +61,7 @@ children sit a little above Choco: they are older, and both are below Spase.
     node build.mjs       # writes dist/ — copy its contents to the repo root
     node preview.mjs     # optional: renders preview.svg to check geometry
     node checkfocus.mjs  # optional: prints each house's zoom frame
+    node domtest.mjs     # optional: drives the card taps in a jsdom DOM
 
 `build.mjs` uses `@rollup/wasm-node` with Babel rather than Vite. Vite's
 bundler, esbuild and esbuild-wasm all run their compiler as a spawned child
