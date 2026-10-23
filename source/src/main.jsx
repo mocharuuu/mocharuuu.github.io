@@ -2,15 +2,14 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Crest, ErrorBoundary } from "./ui.jsx";
 import { DISCORD_INVITE_URL } from "./lib.js";
-import Members from "./pages/Members.jsx";
+import FamilyTree from "./pages/FamilyTree.jsx";
 import "./theme.css";
 
-/* Standalone single-page build of the Kingdom of Foxes Members page.
-   The full site is a multi-route SPA served by FastAPI + nginx; this build
-   ships only the Members route, so there is no router, no auth chrome and no
-   nav targets other than the live site. Data comes from the live public API
-   (see BASE in lib.js) — cross-origin, so no session cookie travels with it
-   and the payload is always the logged-out public one. */
+/* Standalone single-page build of the Kingdom of Foxes family tree, which
+   replaces what used to be the Members roster on this host. The full site is
+   a multi-route SPA served by FastAPI + nginx; this build ships one route, so
+   there is no router and no auth chrome. Nothing here calls an API — the tree
+   is static data in src/family/data.js, so the page needs no backend at all. */
 const SITE = "https://kingdomfoxes.com";
 
 function App() {
@@ -25,14 +24,14 @@ function App() {
           <div className="nav-links-scroll-wrap">
             <div className="nav-links-scroll">
               <a href={SITE} >Home</a>
-              <a href="#" className="active" aria-current="page">Members</a>
+              <a href="#" className="active" aria-current="page">Family Tree</a>
             </div>
           </div>
         </div>
       </nav>
       <main className="container">
         <ErrorBoundary>
-          <Members />
+          <FamilyTree />
         </ErrorBoundary>
       </main>
       <footer className="footer">

@@ -3347,3 +3347,82 @@ body.war-map-page .territory-panel {
 }
 
 
+/* Family tree page. The drawing is a fixed-geometry SVG that scrolls
+   sideways on narrow screens rather than shrinking into illegibility. */
+.family-page { padding: 18px 0 40px; }
+
+.family-head h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  letter-spacing: 0.01em;
+}
+.family-head p {
+  margin: 0 0 18px;
+  color: #9aa4b8;
+  font-size: 14px;
+  max-width: 48rem;
+}
+
+.family-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #0d1119;
+  border: 1px solid #1d2535;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+/* Width in the markup is the natural size; this lets it shrink to the
+   container on wide screens while the scroll container handles narrow ones. */
+.family-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  min-width: 900px;
+}
+
+.family-name {
+  font-weight: 800;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  paint-order: stroke;
+  stroke: #0d1119;
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+.family-name-minor { font-weight: 700; stroke-width: 4px; opacity: 0.78; }
+
+.family-house-label {
+  font-size: 30px;
+  font-weight: 800;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.family-role {
+  fill: #9fd4ea;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  paint-order: stroke;
+  stroke: #0d1119;
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+/* House key — the tree itself carries house by name colour, since any box
+   drawn round one house's members encloses people from another. */
+.family-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0 0 14px;
+  padding: 0;
+  font-size: 13px;
+  color: #c3ccdb;
+}
+.family-legend li { display: flex; align-items: center; gap: 7px; }
+.family-swatch {
+  width: 13px; height: 13px; border-radius: 3px;
+  display: inline-block; flex: none;
+}
+
