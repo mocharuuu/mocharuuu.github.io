@@ -3426,5 +3426,26 @@ body.war-map-page .territory-panel {
   display: inline-block; flex: none;
 }
 
-.family-divorced { fill: #f08a8f; }
+.family-divorced { fill: #f3a6bf; }
+
+/* Person cards: head, in-game username, Fox title. */
+.family-user {
+  font-size: 15px;
+  font-weight: 800;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+.family-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  opacity: 0.92;
+}
+/* The name the tree itself uses, kept as a quiet third line so the diagram
+   stays readable for anyone who knows people by nickname rather than login. */
+.family-nick {
+  font-size: 11px;
+  font-weight: 600;
+  fill: #8893a6;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
 
