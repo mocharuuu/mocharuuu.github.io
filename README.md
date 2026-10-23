@@ -25,7 +25,13 @@ from `mc-heads.net` by username, loaded in the visitor's browser. Pressing a
 house in the key frames just that house's members and dims the rest. Clicking
 a person frames their immediate circle — partners, parents, children, siblings
 and anyone on the other end of a godparent link. Double-clicking opens their
-Wynncraft stats page. Pressing "Everyone" restores the whole tree.
+Wynncraft stats page. Every change of frame is animated, and honours
+`prefers-reduced-motion` by jumping instead.
+
+The diagram is a pan-and-zoom stage rather than a scrolling strip: drag to
+move, scroll or use the +/- buttons in the corner to zoom, and Reset (or
+"Everyone") returns to the whole tree. The zoom stops at 420 diagram units
+across and will not open out past the full width.
 
 Only partners who share children sit side by side; a dissolved marriage is
 routed as its own connector instead, so nobody with two partners reads as one

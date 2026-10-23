@@ -221,3 +221,36 @@ export function estimateWidth(text, fontSize) {
   }
   return units * fontSize;
 }
+
+
+/* ---- viewBox helpers -------------------------------------------------
+   Kept here, out of the component, so the pan/zoom arithmetic can be
+   exercised without a browser (see checkfocus.mjs). */
+
+export const MIN_VIEW_W = 420;   // closest zoom, in diagram units
+export const PAN_SLACK = 0.25;   // how far past the edge a drag may go
+
+/** Keep a viewBox within the zoom limits and near the diagram. */
+export function clampView(v, full) {
+  const w = Math.min(Math.max(v.w, MIN_VIEW_W), full.w);
+  const h = w * (v.h / v.w);
+  return {
+    w, h,
+    x: Math.min(Math.max(v.x, -full.w * PAN_SLACK), full.w - w + full.w * PAN_SLACK),
+    y: Math.min(Math.max(v.y, -full.h * PAN_SLACK), full.h - h + full.h * PAN_SLACK),
+  };
+}
+
+/** Zoom by `factor` about a point in diagram coordinates (defaults to the
+    centre of the current view, which is what the +/- buttons use). */
+export function zoomView(v, factor, full, at) {
+  const w = v.w / factor;
+  const h = w * (v.h / v.w);
+  const cx = at ? at.x : v.x + v.w / 2;
+  const cy = at ? at.y : v.y + v.h / 2;
+  return clampView({
+    w, h,
+    x: cx - ((cx - v.x) / v.w) * w,
+    y: cy - ((cy - v.y) / v.h) * h,
+  }, full);
+}
