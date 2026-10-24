@@ -184,9 +184,22 @@ export function layout({ people, families, godparents, houses, measure }) {
   };
   for (const fam of families) {
     const ps = fam.parents, ks = fam.children || [];
-    for (const a of ps) for (const b of ps) link(a, b);
-    for (const a of ps) for (const k of ks) link(a, k);
-    for (const a of ks) for (const b of ks) link(a, b);
+    for (const a of ps) for (const b of ps) link(a, b);   // partners
+    for (const a of ps) for (const k of ks) link(a, k);   // parent and child
+  }
+  /* Siblings are grouped by shared PARENT, not by shared family entry: half
+     siblings sit in two different families (one per other parent) and would
+     otherwise never be linked to each other. */
+  const childrenOfParent = new Map();
+  for (const fam of families) {
+    for (const a of fam.parents) {
+      if (!childrenOfParent.has(a)) childrenOfParent.set(a, new Set());
+      for (const k of fam.children || []) childrenOfParent.get(a).add(k);
+    }
+  }
+  for (const kids of childrenOfParent.values()) {
+    const arr = [...kids];
+    for (const a of arr) for (const b of arr) link(a, b);
   }
   for (const g of godparents) link(g.person, g.child);
 

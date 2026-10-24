@@ -1,6 +1,8 @@
 /* Loads the built bundle in a DOM and drives the card interactions, which is
    the only way to prove a tap reaches a person card without a real browser. */
 import { JSDOM } from "jsdom";
+import { HOUSES, PEOPLE, FAMILIES, GODPARENTS } from "./src/family/data.js";
+import { layout, estimateWidth } from "./src/family/layout.js";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -49,10 +51,22 @@ await sleep(1500);                      // let the tween settle
 const vb1 = svg.getAttribute("viewBox");
 console.log("viewBox before:", vb0);
 console.log("viewBox settled after single tap:", vb1);
-// Tom's circle per checkfocus.mjs: Neon, Spase, Borky, Astral, Quack, Hboom
-const expected = "2402.0 203.0 1996.0 689.0";
-const near = vb1.split(" ").map(Number)
-  .every((n, i) => Math.abs(n - Number(expected.split(" ")[i])) < 2);
+/* Compute the expected frame rather than hard-coding it, so editing the tree
+   cannot silently invalidate this assertion. */
+const g = layout({ people: PEOPLE, families: FAMILIES, godparents: GODPARENTS,
+                   houses: HOUSES, measure: estimateWidth });
+const circle = g.neighbours.get("tom");
+const mem = g.nodes.filter((q) => circle.has(q.id));
+const pad = 70;
+const ex = [
+  Math.max(0, Math.min(...mem.map((q) => q.left)) - pad),
+  Math.max(0, Math.min(...mem.map((q) => q.top)) - pad),
+];
+ex.push(Math.min(g.width, Math.max(...mem.map((q) => q.right)) + pad) - ex[0]);
+ex.push(Math.min(g.height, Math.max(...mem.map((q) => q.bottom)) + pad) - ex[1]);
+const expected = `${ex[0].toFixed(1)} ${ex[1].toFixed(1)} ${ex[2].toFixed(1)} ${ex[3].toFixed(1)}`;
+const near = vb1.split(" ").map(Number).every((n, i) => Math.abs(n - ex[i]) < 2);
+console.log("Tom's circle:", [...circle].filter((i) => i !== "tom").join(","));
 console.log("single tap framed Tom's circle:", near ? "PASS" : `FAIL (expected ${expected})`);
 
 // --- tapping again should return to the full view -------------------
