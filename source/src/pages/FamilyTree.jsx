@@ -271,7 +271,7 @@ export default function FamilyTree() {
           {g.adoptions.map((a) => (
             <text key={a.key} className="family-role" x={a.x} y={a.y}
                   transform={`rotate(-90 ${a.x} ${a.y})`} textAnchor="middle">
-              adopted
+              {a.label}
             </text>
           ))}
 
@@ -288,7 +288,8 @@ export default function FamilyTree() {
             <g key={m.key}>
               {m.kind === "path"
                 ? <path d={m.d} fill="none" stroke="#f3a6bf" strokeWidth="6"
-                        strokeLinecap="round" strokeDasharray="16 10" />
+                        strokeLinecap="round"
+                        strokeDasharray={m.divorced ? "16 10" : undefined} />
                 : <path d={`M ${m.x1} ${m.y} L ${m.x2} ${m.y}`}
                         stroke="#f3a6bf" strokeWidth="6" strokeLinecap="round" />}
               {/* A dissolved marriage keeps its connector and is struck

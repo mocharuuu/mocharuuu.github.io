@@ -124,7 +124,9 @@ export function layout({ people, families, godparents, houses, measure }) {
 
     const busY = Math.min(...kids.map((k) => k.top)) - (fam.rise || BUS_RISE);
     if (fam.adopted) {
-      adoptions.push({ x: anchorX, y: (anchorY + busY) / 2, key: "adopted-" + fam.children[0] });
+      adoptions.push({ x: anchorX, y: (anchorY + busY) / 2,
+                       label: typeof fam.adopted === "string" ? fam.adopted : "adopted",
+                       key: "adopted-" + fam.children[0] });
     }
 
     if (kids.length === 1) {

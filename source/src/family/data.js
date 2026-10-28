@@ -19,12 +19,15 @@ export const HOUSES = [
   { id: "lorcan",   label: "House Lorcan",   color: "#e8a33d" },
   { id: "everton",  label: "House Everton",  color: "#4fc08d" },
   { id: "yoshima",  label: "House Yoshima",  color: "#7cc7f5" },
+  { id: "imago",    label: "House Imago",    color: "#a78bfa" },
   { id: null,       label: "No house",       color: "#98a1b5" },
 ];
 
 export const PEOPLE = [
   // ---- generation 0 ----------------------------------------------------
   { id: "higher_matriarch", name: "some higher matriarch", house: "everton", col: 16.4, row: 0, minor: true },
+  { id: "imago_gf", name: "male imago", house: "imago", col: 23.8, row: 0, minor: true },
+  { id: "imago_gm", name: "Unknown",    house: "imago", col: 25.2, row: 0, minor: true },
 
   // ---- generation 1 ----------------------------------------------------
   { id: "calder_m1",   name: "male calder",    house: "calder",  col: 5.4,  row: 1, minor: true },
@@ -35,6 +38,8 @@ export const PEOPLE = [
   { id: "unknown_n",   name: "Unknown",        house: "lorcan",  col: 19.0, row: 1, minor: true },
   { id: "lorcan_m1",   name: "male lorcan",    house: "lorcan",  col: 20.2, row: 1, minor: true },
   { id: "unknown_t",   name: "Unknown",        house: "lorcan",  col: 21.4, row: 1, minor: true },
+  { id: "imago_f",     name: "female imago",   house: "imago",   col: 23.4, row: 1, minor: true },
+  { id: "imago_sib",   name: "imago",          house: "imago",   col: 25.6, row: 1, minor: true },
 
   // ---- generation 2 ----------------------------------------------------
   { id: "auspects_m1", name: "male auspects", house: "auspects", col: 3.0, row: 2, minor: true },
@@ -51,7 +56,7 @@ export const PEOPLE = [
   { id: "pho",    name: "Pho",    house: "everton", col: 16.8, row: 2, username: "photor320", title: "Archduke" },
   { id: "viri",   name: "Viri",   house: "everton", col: 18.0, row: 2, username: "Viridian", title: "Marquis" },
   // Jake has no recorded tie to anyone else: Viri's generation, unconnected.
-  { id: "jake",   name: "Jake",   house: "yoshima", col: 24.0, row: 2, username: "Jake70", title: "Marquis" },
+  { id: "jake",   name: "Jake",   house: "yoshima", col: 27.4, row: 2, username: "Jake70", title: "Marquis" },
 
   // ---- generation 3 — the Auspects children are the older half ----------
   { id: "chalupe", name: "Chalup\u00e9", house: "auspects", col: 1.0, row: 2.8, username: "chalupe", title: "Lord" },
@@ -61,9 +66,9 @@ export const PEOPLE = [
   { id: "sek",     name: "Sek",     house: "auspects", col: 5.4, row: 2.8, username: "sek3big", title: "Townsperson" },
   { id: "sini",    name: "Sini",    house: "auspects", col: 6.4, row: 2.8, username: "nothesinistrtype", title: "Countx" },
   // Sitting beyond Lorcan and Yoshima, awaiting the family they will belong to.
-  { id: "mocha", name: "Mocha", house: null, col: 25.2, row: 2.8, username: "mocharuu",  title: "Baroness" },
-  { id: "mango", name: "Mango", house: null, col: 26.4, row: 2.8, username: "trumango",  title: "Sir" },
-  { id: "max",   name: "Max",   house: null, col: 27.8, row: 2.8, username: "Maxkarson", title: "Lord" },
+  { id: "mocha", name: "Mocha", house: "imago", col: 23.4, row: 2, username: "mocharuu",  title: "Baroness" },
+  { id: "mango", name: "Mango", house: "imago", col: 24.6, row: 2, username: "trumango",  title: "Sir" },
+  { id: "max",   name: "Max",   house: "imago", col: 26.0, row: 2, username: "Maxkarson", title: "Lord" },
   // ---- generation 3 — younger than Sini's siblings ----------------------
   { id: "choco",   name: "Choco",   house: "calder",   col: 8.6,  row: 3.2, username: "_HotChocolate", title: "Count" },
   { id: "clod",    name: "Clod",    house: "calder",   col: 9.8,  row: 3.2, username: "Clodwad", title: "Count" },
@@ -75,9 +80,9 @@ export const PEOPLE = [
   { id: "leoh",   name: "Leoh",   house: "calder", col: 9.2,  row: 4.2, username: "__Leoh_", title: "Lord" },
   { id: "hyun",   name: "Hyun",   house: null,     col: 10.6, row: 4.2, username: "hyunugii", title: "Lord" },
   { id: "hkiim",  name: "Hkiim",  house: null,     col: 11.8, row: 4.2, username: "hkiim", title: "Madam" },
-  { id: "mail", name: "Mail", house: null, col: 25.2, row: 4.2, username: "MailOrderGF", title: "Madam" },
-  { id: "mima", name: "Mima", house: null, col: 26.4, row: 4.2, username: "Mima_chan",   title: "Madam" },
-  { id: "nano", name: "Nano", house: null, col: 27.6, row: 4.2, username: "Nanoshere",   title: "Sir" },
+  { id: "mail", name: "Mail", house: null, col: 23.6, row: 3.2, username: "MailOrderGF", title: "Madam" },
+  { id: "mima", name: "Mima", house: null, col: 24.8, row: 3.2, username: "Mima_chan",   title: "Madam" },
+  { id: "nano", name: "Nano", house: null, col: 26.0, row: 3.2, username: "Nanoshere",   title: "Sir" },
 ];
 
 /* One or two parents plus their children. Two parents draw the red bar between
@@ -93,11 +98,16 @@ export const FAMILIES = [
   { parents: ["matriarch_3"], children: ["viri"] },
   { parents: ["unknown_n", "lorcan_m1"], children: ["neon"] },
   { parents: ["lorcan_m1", "unknown_t"], children: ["tom"] },
+  // Mocha is the third child of male lorcan, by a different mother again.
+  // He already has a partner either side, so this union is routed.
+  { parents: ["lorcan_m1", "imago_f"], children: ["mocha"], route: "below" },
+  { parents: ["imago_gf", "imago_gm"], children: ["imago_f", "imago_sib"] },
+  { parents: ["imago_sib"], children: ["max"] },
   { parents: ["calder_m1", "unknown_1"],   children: ["calder_f2", "calder_m2"] },
   { parents: ["auspects_m1", "calder_f2"], children: ["chalupe", "magnum", "window", "sek", "sini"], rise: 74 },
   { parents: ["calder_m2", "unknown_2"],   children: ["choco"] },
   { parents: ["window", "fool"], children: [] },
-  { parents: ["mocha", "mango"], children: [] },
+  { parents: ["mocha", "mango"], children: ["mail", "mima", "nano"], adopted: "fostered", rise: 66 },
   { parents: ["tom", "spase"],  children: [], status: "divorced", route: "below" },
   { parents: ["tom", "borky"],  children: ["astral", "quack", "hboom"] },
   { parents: ["apollo", "spase"], children: ["clod"], status: "divorced" },

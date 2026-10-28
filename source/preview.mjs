@@ -17,14 +17,14 @@ g.legend.forEach((h, i) => {
   out.push(`<text x="${x + 24}" y="38" fill="#c3ccdb" style="font:${F(15)}">${esc(h.label)}</text>`);
 });
 for (const s of g.descents) out.push(`<path d="${s.d}" fill="none" stroke="#7e95ad" stroke-width="5" stroke-linecap="round"${s.dashed ? ' stroke-dasharray="7 9"' : ""}/>`);
-for (const a of g.adoptions) out.push(`<text x="${a.x}" y="${a.y}" transform="rotate(-90 ${a.x} ${a.y})" text-anchor="middle" fill="#a7bccd" style="font:${F(12)}">adopted</text>`);
+for (const a of g.adoptions) out.push(`<text x="${a.x}" y="${a.y}" transform="rotate(-90 ${a.x} ${a.y})" text-anchor="middle" fill="#a7bccd" style="font:${F(12)}">${a.label}</text>`);
 for (const s of g.godLinks) {
   out.push(`<path d="${s.d}" fill="none" stroke="#7e95ad" stroke-width="5" stroke-linecap="round" stroke-dasharray="14 11"/>`);
   out.push(`<text x="${s.labelAt.x}" y="${s.labelAt.y}" text-anchor="middle" fill="#a7bccd" style="font:${F(12)}">${esc(s.role)}</text>`);
 }
 for (const m of g.marriages) {
   if (m.kind === "path") {
-    out.push(`<path d="${m.d}" fill="none" stroke="#f3a6bf" stroke-width="6" stroke-linecap="round" stroke-dasharray="16 10"/>`);
+    out.push(`<path d="${m.d}" fill="none" stroke="#f3a6bf" stroke-width="6" stroke-linecap="round"${m.divorced ? ' stroke-dasharray="16 10"' : ""}/>`);
   } else {
     out.push(`<path d="M ${m.x1} ${m.y} L ${m.x2} ${m.y}" stroke="#f3a6bf" stroke-width="6" stroke-linecap="round"/>`);
   }
