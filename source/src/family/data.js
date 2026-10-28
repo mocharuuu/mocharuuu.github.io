@@ -26,8 +26,8 @@ export const HOUSES = [
 export const PEOPLE = [
   // ---- generation 0 ----------------------------------------------------
   { id: "higher_matriarch", name: "some higher matriarch", house: "everton", col: 16.4, row: 0, minor: true },
-  { id: "imago_gf", name: "male imago", house: "imago", col: 23.8, row: 0, minor: true },
-  { id: "imago_gm", name: "Unknown",    house: "imago", col: 25.2, row: 0, minor: true },
+  { id: "imago_gm", name: "female imago", house: "imago", col: 23.8, row: 0, minor: true },
+  { id: "imago_gf", name: "Unknown",      house: "imago", col: 25.2, row: 0, minor: true },
 
   // ---- generation 1 ----------------------------------------------------
   { id: "calder_m1",   name: "male calder",    house: "calder",  col: 5.4,  row: 1, minor: true },
@@ -39,7 +39,7 @@ export const PEOPLE = [
   { id: "lorcan_m1",   name: "male lorcan",    house: "lorcan",  col: 20.2, row: 1, minor: true },
   { id: "unknown_t",   name: "Unknown",        house: "lorcan",  col: 21.4, row: 1, minor: true },
   { id: "imago_f",     name: "female imago",   house: "imago",   col: 23.4, row: 1, minor: true },
-  { id: "imago_sib",   name: "imago",          house: "imago",   col: 25.6, row: 1, minor: true },
+  { id: "imago_sib",   name: "female imago",   house: "imago",   col: 25.6, row: 1, minor: true },
 
   // ---- generation 2 ----------------------------------------------------
   { id: "auspects_m1", name: "male auspects", house: "auspects", col: 3.0, row: 2, minor: true },
@@ -101,7 +101,7 @@ export const FAMILIES = [
   // Mocha is the third child of male lorcan, by a different mother again.
   // He already has a partner either side, so this union is routed.
   { parents: ["lorcan_m1", "imago_f"], children: ["mocha"], route: "below" },
-  { parents: ["imago_gf", "imago_gm"], children: ["imago_f", "imago_sib"] },
+  { parents: ["imago_gm", "imago_gf"], children: ["imago_f", "imago_sib"] },
   { parents: ["imago_sib"], children: ["max"] },
   { parents: ["calder_m1", "unknown_1"],   children: ["calder_f2", "calder_m2"] },
   { parents: ["auspects_m1", "calder_f2"], children: ["chalupe", "magnum", "window", "sek", "sini"], rise: 74 },
