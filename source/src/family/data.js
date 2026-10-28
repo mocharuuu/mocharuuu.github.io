@@ -80,9 +80,9 @@ export const PEOPLE = [
   { id: "leoh",   name: "Leoh",   house: "calder", col: 9.2,  row: 4.2, username: "__Leoh_", title: "Lord" },
   { id: "hyun",   name: "Hyun",   house: null,     col: 10.6, row: 4.2, username: "hyunugii", title: "Lord" },
   { id: "hkiim",  name: "Hkiim",  house: null,     col: 11.8, row: 4.2, username: "hkiim", title: "Madam" },
-  { id: "mail", name: "Mail", house: null, col: 23.6, row: 3.2, username: "MailOrderGF", title: "Madam" },
-  { id: "mima", name: "Mima", house: null, col: 24.8, row: 3.2, username: "Mima_chan",   title: "Madam" },
-  { id: "nano", name: "Nano", house: null, col: 26.0, row: 3.2, username: "Nanoshere",   title: "Sir" },
+  { id: "mail", name: "Mail", house: "imago", col: 23.6, row: 3.2, username: "MailOrderGF", title: "Madam" },
+  { id: "mima", name: "Mima", house: "imago", col: 24.8, row: 3.2, username: "Mima_chan",   title: "Madam" },
+  { id: "nano", name: "Nano", house: "imago", col: 26.0, row: 3.2, username: "Nanoshere",   title: "Sir" },
 ];
 
 /* One or two parents plus their children. Two parents draw the red bar between
